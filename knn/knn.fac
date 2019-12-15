@@ -1,0 +1,10 @@
+% tr(ID:Int, X1:Int, X2:Int, L:string)
+tr(1, 10, 12, 'A').
+tr(2, 1, 9, 'B').
+tr(3, 7, 13, 'A').
+tr(4, 4, 2, 'B').
+tr(5, 10, 12, 'A').
+tr(8, 14, 12, 'A').
+
+% te(ID:Int, X1:Int, X2:Int, D:string)
+te(6, 1, 2, 'B').

@@ -1,0 +1,24 @@
+database({tr(ID:integer, X1:integer, X2:integer, L: string),
+	  te(ID: integer, X1:integer, X2:integer, D: string)
+	 }).
+%Recursive Solution
+% find all distance
+dist(IdA, IdB, S, L) <- tr(IdA, X1a, X2a, L), te(IdB, X1b, X2b,_), S = (X1a - X1b)*(X1a - X1b) + (X2a - X2b)*(X2a - X2b).
+export dist(IdA, IdB, S, L).
+
+order(IdA, IdB, S) <- dist(IdA, IdB, S, _), ~smaller(IdA, IdB, S).
+smaller(IdA, IdB, S) <- dist(_, IdB, S2, _), dist(IdA, IdB, S, _), S2<S.
+next(IdA1,IdB,S1,IdA2,S2) <- dist(IdA1, IdB, S1, _), dist(IdA1, IdB, S2, _), ~between(IdA1,IdB,S1,IdA2,S2).
+between(IdA1,IdB,S1,IdA3,S3) <- dist(IdA1, IdB, S1, _), dist(IdA2, IdB, S2, _), dist(IdA3, IdB, S3, _), D1<D2, D2<D3.
+order(IdA2,IdB,S2) <- order(IdA1,IdB,S1), next(IdA1,IdB,S1,IdA1,S2), S2 <= S1+20.
+export order(IdA2,IdB,S2).
+
+increase(IdA2, IdB, S2,0) <- order(IdA1, IdB, S1), next(IdA1,IdB,S1,IdA2,S2), S2 <= S1+20.
+increase(IdA2,IdB,S2,N2) <- increase(IdA3, IdB, S3,N3), next(IdA1,IdB,S1,IdA2,S2), S2 <= S3 + N3, N2=N3+20, N3<120.
+final(IdA,IdB, S) <- increase(IdA,IdB,S,_).
+export final(IdA,IdB,S).
+
+% given a certain k
+count(IdB, L, count<IdA>) <- final(IdA,IdB,_),tr(IdA, _, _, L) .
+export count(IdB, L, C).
+

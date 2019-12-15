@@ -1,0 +1,26 @@
+database({tr(ID:integer, X1:integer, X2:integer, L: string),
+	  te(ID: integer, X1:integer, X2:integer, D: string)
+	 }).
+
+
+%Non Recursive Solution
+% find all distance
+dist(IdA, IdB, S, L) <- tr(IdA, X1a, X2a, L), te(IdB, X1b, X2b,_), S = (X1a - X1b)*(X1a - X1b) + (X2a - X2b)*(X2a - X2b).
+export dist(IdA, IdB, S, L).
+
+order(J,IdA, IdB, S) <- dist(IdA, IdB, S, _), J=1.
+order(J1,IdA1, IdB, S1) <- order(J,IdA, IdB, S),dist(IdA1, IdB, S1, _),S<S1,J1=(J+1).
+result(J,IdB, min<S>) <- order(J,_, IdB, S).
+final(J,IdA, IdB, D, L) <- result(J,IdB, D), dist(IdA, IdB, D, L).
+
+export order(C, IdA, IdB, S).
+export order(J,IdA, IdB, S).
+export result(J, IdB, S).
+export final(J,IdA, IdB, D, L).
+
+% given a certain k
+count(IdB, L, count<IdA>) <- final(J,IdA, IdB, D, L), J <= 3.
+export count(IdB, L, C).
+
+
+
