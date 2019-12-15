@@ -1,0 +1,4427 @@
+
+====== 11/20 14:45:16 tc_ll/arc=arc/codegen=true/partitions=3/joinType=BroadcastHashJoin/fixpointTask=false/output=query/test_out/log=error ======
+
+Load: 2199 ms
+
+== Datalog ObjectText ==
+database({arc(A: integer, B: integer)}).
+tc(A,B) <- arc(A,B).
+tc(A,B) <- tc(A,C), arc(C,B).
+
+== Datalog Query ==
+tc(A, B).
+== Compiled PCG Tree ==
+
+PCGOrNode(tc_ff_ff(A, B), #Children: 1, predicateType: DERIVED, isRecursive: Yes)
+ Clique 1
+  Parents: 
+   1) PCGOrNode(tc_ff_ff(A, C), #Children: 1, predicateType: DERIVED, isRecursive: Yes)
+   2) PCGOrNode(tc_ff_ff(A, B), #Children: 1, predicateType: DERIVED, isRecursive: Yes)
+  Clique Predicates: 
+  1) CliquePredicate(tc_ff, binding: ff, #ExitRules: 1, #RecursiveRules: 1)
+   Exit Rules:
+    PCGAndNode(tc_ff_ff(A, B), rule#: 1, #Children: 1, predicateType: DERIVED)
+     PCGOrNode(arc_ff_ff(A, B), #Children: 1, predicateType: BASE)
+      arc(A:integer, B:integer)
+   Recursive Rules:
+    PCGAndNode(tc_ff_ff(A, B), rule#: 2, #Children: 2, predicateType: DERIVED)
+     PCGOrNode(tc_ff_ff(A, C), #Children: 1, predicateType: DERIVED, isRecursive: Yes)
+     PCGOrNode(arc_bf_bf(C, B), #Children: 1, predicateType: BASE)
+      arc(A:integer, B:integer)
+ End Clique 1
+== Operator Program ==
+
+0: tc(Var_1, Var_2) <RECURSIVE_CLIQUE>(Recursion: NONLINEAR, Evaluation Type: SemiNaive)
+Exit Rules: 
+ 1: arc(A, B) <BASE_RELATION>
+Recursive Rules: 
+ 1: (A, B) <PROJECT>
+  2: (0.C = 1.A) <JOIN>
+   3: tc(A, C) <RECURSIVE_RELATION>
+   3: arc(A, B) <BASE_RELATION>
+
+== Parsed Logical Plan ==
+'SubqueryAlias tc
++- 'Project [unresolvedalias('tc1.A AS Var_1#14, None), unresolvedalias('arc2.B AS Var_2#15, None)]
+   +- 'Recursion tc, [Driver], [1, 0]
+      :- 'UnresolvedRelation `arc`
+      +- 'Project ['tc1.A, 'arc2.B]
+         +- 'Join Inner, ('tc1.C = 'arc2.A)
+            :- SubqueryAlias tc1
+            :  +- LinearRecursiveRelation tc, [A#12, C#13], [1, 0]
+            +- 'BroadcastHint
+               +- 'SubqueryAlias arc2
+                  +- 'Project [*]
+                     +- 'UnresolvedRelation `arc`
+
+== Analyzed Logical Plan ==
+Var_1: int, Var_2: int
+SubqueryAlias tc
++- Project [A#12 AS Var_1#14, B#1 AS Var_2#15]
+   +- Recursion tc, [Driver], [1, 0]
+      :- SubqueryAlias arc
+      :  +- LogicalRDD [A#0, B#1]
+      +- Project [A#12, B#1]
+         +- Join Inner, (C#13 = A#0)
+            :- SubqueryAlias tc1
+            :  +- LinearRecursiveRelation tc, [A#12, C#13], [1, 0]
+            +- BroadcastHint
+               +- SubqueryAlias arc2
+                  +- Project [A#0, B#1]
+                     +- SubqueryAlias arc
+                        +- LogicalRDD [A#0, B#1]
+
+== Optimized Logical Plan ==
+Project [A#12 AS Var_1#14, B#1 AS Var_2#15]
++- Recursion tc, [Driver], [1, 0]
+   :- LogicalRDD [A#0, B#1]
+   +- Project [A#12, B#1]
+      +- Join Inner, (C#13 = A#0)
+         :- LinearRecursiveRelation tc, [A#12, C#13], [1, 0]
+         +- BroadcastHint
+            +- Project [A#0, B#1]
+               +- LogicalRDD [A#0, B#1]
+
+== Physical Plan ==
+*Project [A#12 AS Var_1#14, B#1 AS Var_2#15]
++- Recursion [A#12,B#1] (Driver) [tc][1,0]
+   :- ExitExchange tc, hashpartitioning(A#0, 3)
+   :  +- Scan ExistingRDD[A#0,B#1]
+   +- RecExchange tc, false, hashpartitioning(A#12, 3)
+      +- *Project [A#12, B#1]
+         +- *BroadcastHashJoin [C#13], [A#0], Inner, BuildRight
+            :- *LinearRecursiveRelation [A#12,C#13](tc)
+            +- BroadcastExchange HashedRelationBroadcastMode(List(cast(input[0, int, true] as bigint)))
+               +- *Project [A#0, B#1]
+                  +- Scan ExistingRDD[A#0,B#1]
+
+Compile Datalog: 470 ms
+Recursive Iterations: 91 ms
+Execution (Collect): 1047 ms
+Total: 3718 ms
+Result Size: 11
+
+====== 11/20 14:46:54 tc_ll/arc=arc/codegen=true/partitions=3/joinType=BroadcastHashJoin/fixpointTask=false/output=query/test_out/log=error ======
+
+Load: 1684 ms
+
+== Datalog ObjectText ==
+database({arc(A: integer, B: integer)}).
+tc(A,B) <- arc(A,B).
+tc(A,B) <- tc(A,C), arc(C,B).
+
+== Datalog Query ==
+tc(A, B).
+== Compiled PCG Tree ==
+
+PCGOrNode(tc_ff_ff(A, B), #Children: 1, predicateType: DERIVED, isRecursive: Yes)
+ Clique 1
+  Parents: 
+   1) PCGOrNode(tc_ff_ff(A, C), #Children: 1, predicateType: DERIVED, isRecursive: Yes)
+   2) PCGOrNode(tc_ff_ff(A, B), #Children: 1, predicateType: DERIVED, isRecursive: Yes)
+  Clique Predicates: 
+  1) CliquePredicate(tc_ff, binding: ff, #ExitRules: 1, #RecursiveRules: 1)
+   Exit Rules:
+    PCGAndNode(tc_ff_ff(A, B), rule#: 1, #Children: 1, predicateType: DERIVED)
+     PCGOrNode(arc_ff_ff(A, B), #Children: 1, predicateType: BASE)
+      arc(A:integer, B:integer)
+   Recursive Rules:
+    PCGAndNode(tc_ff_ff(A, B), rule#: 2, #Children: 2, predicateType: DERIVED)
+     PCGOrNode(tc_ff_ff(A, C), #Children: 1, predicateType: DERIVED, isRecursive: Yes)
+     PCGOrNode(arc_bf_bf(C, B), #Children: 1, predicateType: BASE)
+      arc(A:integer, B:integer)
+ End Clique 1
+== Operator Program ==
+
+0: tc(Var_1, Var_2) <RECURSIVE_CLIQUE>(Recursion: NONLINEAR, Evaluation Type: SemiNaive)
+Exit Rules: 
+ 1: arc(A, B) <BASE_RELATION>
+Recursive Rules: 
+ 1: (A, B) <PROJECT>
+  2: (0.C = 1.A) <JOIN>
+   3: tc(A, C) <RECURSIVE_RELATION>
+   3: arc(A, B) <BASE_RELATION>
+
+== Parsed Logical Plan ==
+'SubqueryAlias tc
++- 'Project [unresolvedalias('tc1.A AS Var_1#14, None), unresolvedalias('arc2.B AS Var_2#15, None)]
+   +- 'Recursion tc, [Driver], [1, 0]
+      :- 'UnresolvedRelation `arc`
+      +- 'Project ['tc1.A, 'arc2.B]
+         +- 'Join Inner, ('tc1.C = 'arc2.A)
+            :- SubqueryAlias tc1
+            :  +- LinearRecursiveRelation tc, [A#12, C#13], [1, 0]
+            +- 'BroadcastHint
+               +- 'SubqueryAlias arc2
+                  +- 'Project [*]
+                     +- 'UnresolvedRelation `arc`
+
+== Analyzed Logical Plan ==
+Var_1: int, Var_2: int
+SubqueryAlias tc
++- Project [A#12 AS Var_1#14, B#1 AS Var_2#15]
+   +- Recursion tc, [Driver], [1, 0]
+      :- SubqueryAlias arc
+      :  +- LogicalRDD [A#0, B#1]
+      +- Project [A#12, B#1]
+         +- Join Inner, (C#13 = A#0)
+            :- SubqueryAlias tc1
+            :  +- LinearRecursiveRelation tc, [A#12, C#13], [1, 0]
+            +- BroadcastHint
+               +- SubqueryAlias arc2
+                  +- Project [A#0, B#1]
+                     +- SubqueryAlias arc
+                        +- LogicalRDD [A#0, B#1]
+
+== Optimized Logical Plan ==
+Project [A#12 AS Var_1#14, B#1 AS Var_2#15]
++- Recursion tc, [Driver], [1, 0]
+   :- LogicalRDD [A#0, B#1]
+   +- Project [A#12, B#1]
+      +- Join Inner, (C#13 = A#0)
+         :- LinearRecursiveRelation tc, [A#12, C#13], [1, 0]
+         +- BroadcastHint
+            +- Project [A#0, B#1]
+               +- LogicalRDD [A#0, B#1]
+
+== Physical Plan ==
+*Project [A#12 AS Var_1#14, B#1 AS Var_2#15]
++- Recursion [A#12,B#1] (Driver) [tc][1,0]
+   :- ExitExchange tc, hashpartitioning(A#0, 3)
+   :  +- Scan ExistingRDD[A#0,B#1]
+   +- RecExchange tc, false, hashpartitioning(A#12, 3)
+      +- *Project [A#12, B#1]
+         +- *BroadcastHashJoin [C#13], [A#0], Inner, BuildRight
+            :- *LinearRecursiveRelation [A#12,C#13](tc)
+            +- BroadcastExchange HashedRelationBroadcastMode(List(cast(input[0, int, true] as bigint)))
+               +- *Project [A#0, B#1]
+                  +- Scan ExistingRDD[A#0,B#1]
+
+Compile Datalog: 368 ms
+Recursive Iterations: 78 ms
+Execution (Collect): 916 ms
+Total: 2970 ms
+Result Size: 11
+
+====== 11/20 14:47:42 tc_ll/arc=arc/codegen=true/partitions=3/joinType=BroadcastHashJoin/fixpointTask=false/output=query/test_out/log=error ======
+
+Load: 1671 ms
+
+RamSQL Parse: 70 ms
+WITH recursive tc (A, B)
+AS  (SELECT A, B FROM arc)
+UNION
+(SELECT tc.A, arc.B FROM tc, arc WHERE tc.B = arc.A)
+SELECT A, B FROM tc
+
+RamSQL Analyze: 113 ms
+RamSQL Optimize: 25 ms
+RamSQL Generate rules of `tc`: 163 ms
+
+RamSQL Analyze: 2 ms
+RamSQL Optimize: 1 ms
+RamSQL Generate rules of outermost query: 4 ms
+
+== Datalog ObjectText ==
+database({arc(A: integer, B: integer)}).
+tc(A0, B1) <- arc(A0, B1).
+tc(G11, B1) <- tc(G11, G10), arc(G10, B1).
+result(A6, B7) <- tc(A6, B7).
+
+== Datalog Query ==
+result(A6, B7).
+== Compiled PCG Tree ==
+
+PCGOrNode(result_ff_ff(A6, B7), #Children: 1, predicateType: DERIVED, isRecursive: No)
+ PCGAndNode(result_ff_ff(A6, B7), rule#: 3, #Children: 1, predicateType: DERIVED)
+  PCGOrNode(tc_ff_ff(A6, B7), #Children: 1, predicateType: DERIVED, isRecursive: Yes)
+   Clique 1
+    Parents: 
+     1) PCGOrNode(tc_ff_ff(G11, G10), #Children: 1, predicateType: DERIVED, isRecursive: Yes)
+     2) PCGOrNode(tc_ff_ff(A6, B7), #Children: 1, predicateType: DERIVED, isRecursive: Yes)
+    Clique Predicates: 
+    1) CliquePredicate(tc_ff, binding: ff, #ExitRules: 1, #RecursiveRules: 1)
+     Exit Rules:
+      PCGAndNode(tc_ff_ff(A0, B1), rule#: 1, #Children: 1, predicateType: DERIVED)
+       PCGOrNode(arc_ff_ff(A0, B1), #Children: 1, predicateType: BASE)
+        arc(A:integer, B:integer)
+     Recursive Rules:
+      PCGAndNode(tc_ff_ff(G11, B1), rule#: 2, #Children: 2, predicateType: DERIVED)
+       PCGOrNode(tc_ff_ff(G11, G10), #Children: 1, predicateType: DERIVED, isRecursive: Yes)
+       PCGOrNode(arc_bf_bf(G10, B1), #Children: 1, predicateType: BASE)
+        arc(A:integer, B:integer)
+   End Clique 1
+== Operator Program ==
+
+0: tc(Var_1, Var_2) <RECURSIVE_CLIQUE>(Recursion: NONLINEAR, Evaluation Type: SemiNaive)
+Exit Rules: 
+ 1: arc(A, B) <BASE_RELATION>
+Recursive Rules: 
+ 1: (G11, B) <PROJECT>
+  2: (0.G10 = 1.A) <JOIN>
+   3: tc(G11, G10) <RECURSIVE_RELATION>
+   3: arc(A, B) <BASE_RELATION>
+
+== Parsed Logical Plan ==
+'SubqueryAlias tc
++- 'Project [unresolvedalias('tc1.G11 AS Var_1#22, None), unresolvedalias('arc2.B AS Var_2#23, None)]
+   +- 'Recursion tc, [Driver], [1, 0]
+      :- 'UnresolvedRelation `arc`
+      +- 'Project ['tc1.G11, 'arc2.B]
+         +- 'Join Inner, ('tc1.G10 = 'arc2.A)
+            :- SubqueryAlias tc1
+            :  +- LinearRecursiveRelation tc, [G11#20, G10#21], [1, 0]
+            +- 'BroadcastHint
+               +- 'SubqueryAlias arc2
+                  +- 'Project [*]
+                     +- 'UnresolvedRelation `arc`
+
+== Analyzed Logical Plan ==
+Var_1: int, Var_2: int
+SubqueryAlias tc
++- Project [G11#20 AS Var_1#22, B#1 AS Var_2#23]
+   +- Recursion tc, [Driver], [1, 0]
+      :- SubqueryAlias arc
+      :  +- LogicalRDD [A#0, B#1]
+      +- Project [G11#20, B#1]
+         +- Join Inner, (G10#21 = A#0)
+            :- SubqueryAlias tc1
+            :  +- LinearRecursiveRelation tc, [G11#20, G10#21], [1, 0]
+            +- BroadcastHint
+               +- SubqueryAlias arc2
+                  +- Project [A#0, B#1]
+                     +- SubqueryAlias arc
+                        +- LogicalRDD [A#0, B#1]
+
+== Optimized Logical Plan ==
+Project [G11#20 AS Var_1#22, B#1 AS Var_2#23]
++- Recursion tc, [Driver], [1, 0]
+   :- LogicalRDD [A#0, B#1]
+   +- Project [G11#20, B#1]
+      +- Join Inner, (G10#21 = A#0)
+         :- LinearRecursiveRelation tc, [G11#20, G10#21], [1, 0]
+         +- BroadcastHint
+            +- Project [A#0, B#1]
+               +- LogicalRDD [A#0, B#1]
+
+== Physical Plan ==
+*Project [G11#20 AS Var_1#22, B#1 AS Var_2#23]
++- Recursion [G11#20,B#1] (Driver) [tc][1,0]
+   :- ExitExchange tc, hashpartitioning(A#0, 3)
+   :  +- Scan ExistingRDD[A#0,B#1]
+   +- RecExchange tc, false, hashpartitioning(G11#20, 3)
+      +- *Project [G11#20, B#1]
+         +- *BroadcastHashJoin [G10#21], [A#0], Inner, BuildRight
+            :- *LinearRecursiveRelation [G11#20,G10#21](tc)
+            +- BroadcastExchange HashedRelationBroadcastMode(List(cast(input[0, int, true] as bigint)))
+               +- *Project [A#0, B#1]
+                  +- Scan ExistingRDD[A#0,B#1]
+
+Recursive Iterations: 75 ms
+[Success - Execution Finished]
+Compile RamSQL: 508 ms
+Execution (Collect): 908 ms
+Total: 3104 ms
+Result Size: 11
+
+====== 11/20 14:48:53 tc_ll/arc=arc/codegen=true/partitions=3/joinType=BroadcastHashJoin/fixpointTask=false/output=query/test_out/log=error ======
+
+Load: 1684 ms
+
+RamSQL Parse: 68 ms
+WITH recursive tc (A, B)
+AS  (SELECT A, B FROM arc)
+UNION
+(SELECT tc.A, arc.B FROM tc, arc WHERE tc.B = arc.A)
+SELECT A, B FROM tc
+
+RamSQL Analyze: 113 ms
+RamSQL Optimize: 25 ms
+RamSQL Generate rules of `tc`: 164 ms
+
+RamSQL Analyze: 3 ms
+RamSQL Optimize: 0 ms
+RamSQL Generate rules of outermost query: 5 ms
+
+== Datalog ObjectText ==
+database({arc(A: integer, B: integer)}).
+tc(A0, B1) <- arc(A0, B1).
+tc(G11, B1) <- tc(G11, G10), arc(G10, B1).
+result(A6, B7) <- tc(A6, B7).
+
+== Datalog Query ==
+result(A6, B7).
+== Compiled PCG Tree ==
+
+PCGOrNode(result_ff_ff(A6, B7), #Children: 1, predicateType: DERIVED, isRecursive: No)
+ PCGAndNode(result_ff_ff(A6, B7), rule#: 3, #Children: 1, predicateType: DERIVED)
+  PCGOrNode(tc_ff_ff(A6, B7), #Children: 1, predicateType: DERIVED, isRecursive: Yes)
+   Clique 1
+    Parents: 
+     1) PCGOrNode(tc_ff_ff(G11, G10), #Children: 1, predicateType: DERIVED, isRecursive: Yes)
+     2) PCGOrNode(tc_ff_ff(A6, B7), #Children: 1, predicateType: DERIVED, isRecursive: Yes)
+    Clique Predicates: 
+    1) CliquePredicate(tc_ff, binding: ff, #ExitRules: 1, #RecursiveRules: 1)
+     Exit Rules:
+      PCGAndNode(tc_ff_ff(A0, B1), rule#: 1, #Children: 1, predicateType: DERIVED)
+       PCGOrNode(arc_ff_ff(A0, B1), #Children: 1, predicateType: BASE)
+        arc(A:integer, B:integer)
+     Recursive Rules:
+      PCGAndNode(tc_ff_ff(G11, B1), rule#: 2, #Children: 2, predicateType: DERIVED)
+       PCGOrNode(tc_ff_ff(G11, G10), #Children: 1, predicateType: DERIVED, isRecursive: Yes)
+       PCGOrNode(arc_bf_bf(G10, B1), #Children: 1, predicateType: BASE)
+        arc(A:integer, B:integer)
+   End Clique 1
+== Operator Program ==
+
+0: tc(Var_1, Var_2) <RECURSIVE_CLIQUE>(Recursion: NONLINEAR, Evaluation Type: SemiNaive)
+Exit Rules: 
+ 1: arc(A, B) <BASE_RELATION>
+Recursive Rules: 
+ 1: (G11, B) <PROJECT>
+  2: (0.G10 = 1.A) <JOIN>
+   3: tc(G11, G10) <RECURSIVE_RELATION>
+   3: arc(A, B) <BASE_RELATION>
+
+== Parsed Logical Plan ==
+'SubqueryAlias tc
++- 'Project [unresolvedalias('tc1.G11 AS Var_1#22, None), unresolvedalias('arc2.B AS Var_2#23, None)]
+   +- 'Recursion tc, [Driver], [1, 0]
+      :- 'UnresolvedRelation `arc`
+      +- 'Project ['tc1.G11, 'arc2.B]
+         +- 'Join Inner, ('tc1.G10 = 'arc2.A)
+            :- SubqueryAlias tc1
+            :  +- LinearRecursiveRelation tc, [G11#20, G10#21], [1, 0]
+            +- 'BroadcastHint
+               +- 'SubqueryAlias arc2
+                  +- 'Project [*]
+                     +- 'UnresolvedRelation `arc`
+
+== Analyzed Logical Plan ==
+Var_1: int, Var_2: int
+SubqueryAlias tc
++- Project [G11#20 AS Var_1#22, B#1 AS Var_2#23]
+   +- Recursion tc, [Driver], [1, 0]
+      :- SubqueryAlias arc
+      :  +- LogicalRDD [A#0, B#1]
+      +- Project [G11#20, B#1]
+         +- Join Inner, (G10#21 = A#0)
+            :- SubqueryAlias tc1
+            :  +- LinearRecursiveRelation tc, [G11#20, G10#21], [1, 0]
+            +- BroadcastHint
+               +- SubqueryAlias arc2
+                  +- Project [A#0, B#1]
+                     +- SubqueryAlias arc
+                        +- LogicalRDD [A#0, B#1]
+
+== Optimized Logical Plan ==
+Project [G11#20 AS Var_1#22, B#1 AS Var_2#23]
++- Recursion tc, [Driver], [1, 0]
+   :- LogicalRDD [A#0, B#1]
+   +- Project [G11#20, B#1]
+      +- Join Inner, (G10#21 = A#0)
+         :- LinearRecursiveRelation tc, [G11#20, G10#21], [1, 0]
+         +- BroadcastHint
+            +- Project [A#0, B#1]
+               +- LogicalRDD [A#0, B#1]
+
+== Physical Plan ==
+*Project [G11#20 AS Var_1#22, B#1 AS Var_2#23]
++- Recursion [G11#20,B#1] (Driver) [tc][1,0]
+   :- ExitExchange tc, hashpartitioning(A#0, 3)
+   :  +- Scan ExistingRDD[A#0,B#1]
+   +- RecExchange tc, false, hashpartitioning(G11#20, 3)
+      +- *Project [G11#20, B#1]
+         +- *BroadcastHashJoin [G10#21], [A#0], Inner, BuildRight
+            :- *LinearRecursiveRelation [G11#20,G10#21](tc)
+            +- BroadcastExchange HashedRelationBroadcastMode(List(cast(input[0, int, true] as bigint)))
+               +- *Project [A#0, B#1]
+                  +- Scan ExistingRDD[A#0,B#1]
+
+Recursive Iterations: 77 ms
+[Success - Execution Finished]
+Compile RamSQL: 517 ms
+Execution (Collect): 920 ms
+Total: 3137 ms
+Result Size: 11
+
+====== 11/20 14:49:09 tc_ll/arc=arc/codegen=true/partitions=3/joinType=BroadcastHashJoin/fixpointTask=false/output=query/test_out/log=error ======
+
+Load: 1663 ms
+
+== Datalog ObjectText ==
+database({arc(A: integer, B: integer)}).
+tc(A,B) <- arc(A,B).
+tc(A,B) <- tc(A,C), arc(C,B).
+
+== Datalog Query ==
+tc(A, B).
+== Compiled PCG Tree ==
+
+PCGOrNode(tc_ff_ff(A, B), #Children: 1, predicateType: DERIVED, isRecursive: Yes)
+ Clique 1
+  Parents: 
+   1) PCGOrNode(tc_ff_ff(A, C), #Children: 1, predicateType: DERIVED, isRecursive: Yes)
+   2) PCGOrNode(tc_ff_ff(A, B), #Children: 1, predicateType: DERIVED, isRecursive: Yes)
+  Clique Predicates: 
+  1) CliquePredicate(tc_ff, binding: ff, #ExitRules: 1, #RecursiveRules: 1)
+   Exit Rules:
+    PCGAndNode(tc_ff_ff(A, B), rule#: 1, #Children: 1, predicateType: DERIVED)
+     PCGOrNode(arc_ff_ff(A, B), #Children: 1, predicateType: BASE)
+      arc(A:integer, B:integer)
+   Recursive Rules:
+    PCGAndNode(tc_ff_ff(A, B), rule#: 2, #Children: 2, predicateType: DERIVED)
+     PCGOrNode(tc_ff_ff(A, C), #Children: 1, predicateType: DERIVED, isRecursive: Yes)
+     PCGOrNode(arc_bf_bf(C, B), #Children: 1, predicateType: BASE)
+      arc(A:integer, B:integer)
+ End Clique 1
+== Operator Program ==
+
+0: tc(Var_1, Var_2) <RECURSIVE_CLIQUE>(Recursion: NONLINEAR, Evaluation Type: SemiNaive)
+Exit Rules: 
+ 1: arc(A, B) <BASE_RELATION>
+Recursive Rules: 
+ 1: (A, B) <PROJECT>
+  2: (0.C = 1.A) <JOIN>
+   3: tc(A, C) <RECURSIVE_RELATION>
+   3: arc(A, B) <BASE_RELATION>
+
+== Parsed Logical Plan ==
+'SubqueryAlias tc
++- 'Project [unresolvedalias('tc1.A AS Var_1#14, None), unresolvedalias('arc2.B AS Var_2#15, None)]
+   +- 'Recursion tc, [Driver], [1, 0]
+      :- 'UnresolvedRelation `arc`
+      +- 'Project ['tc1.A, 'arc2.B]
+         +- 'Join Inner, ('tc1.C = 'arc2.A)
+            :- SubqueryAlias tc1
+            :  +- LinearRecursiveRelation tc, [A#12, C#13], [1, 0]
+            +- 'BroadcastHint
+               +- 'SubqueryAlias arc2
+                  +- 'Project [*]
+                     +- 'UnresolvedRelation `arc`
+
+== Analyzed Logical Plan ==
+Var_1: int, Var_2: int
+SubqueryAlias tc
++- Project [A#12 AS Var_1#14, B#1 AS Var_2#15]
+   +- Recursion tc, [Driver], [1, 0]
+      :- SubqueryAlias arc
+      :  +- LogicalRDD [A#0, B#1]
+      +- Project [A#12, B#1]
+         +- Join Inner, (C#13 = A#0)
+            :- SubqueryAlias tc1
+            :  +- LinearRecursiveRelation tc, [A#12, C#13], [1, 0]
+            +- BroadcastHint
+               +- SubqueryAlias arc2
+                  +- Project [A#0, B#1]
+                     +- SubqueryAlias arc
+                        +- LogicalRDD [A#0, B#1]
+
+== Optimized Logical Plan ==
+Project [A#12 AS Var_1#14, B#1 AS Var_2#15]
++- Recursion tc, [Driver], [1, 0]
+   :- LogicalRDD [A#0, B#1]
+   +- Project [A#12, B#1]
+      +- Join Inner, (C#13 = A#0)
+         :- LinearRecursiveRelation tc, [A#12, C#13], [1, 0]
+         +- BroadcastHint
+            +- Project [A#0, B#1]
+               +- LogicalRDD [A#0, B#1]
+
+== Physical Plan ==
+*Project [A#12 AS Var_1#14, B#1 AS Var_2#15]
++- Recursion [A#12,B#1] (Driver) [tc][1,0]
+   :- ExitExchange tc, hashpartitioning(A#0, 3)
+   :  +- Scan ExistingRDD[A#0,B#1]
+   +- RecExchange tc, false, hashpartitioning(A#12, 3)
+      +- *Project [A#12, B#1]
+         +- *BroadcastHashJoin [C#13], [A#0], Inner, BuildRight
+            :- *LinearRecursiveRelation [A#12,C#13](tc)
+            +- BroadcastExchange HashedRelationBroadcastMode(List(cast(input[0, int, true] as bigint)))
+               +- *Project [A#0, B#1]
+                  +- Scan ExistingRDD[A#0,B#1]
+
+Compile Datalog: 339 ms
+Recursive Iterations: 92 ms
+Execution (Collect): 937 ms
+Total: 2941 ms
+Result Size: 11
+
+====== 11/20 15:00:07 tc_ll/arc=arc/codegen=true/partitions=3/joinType=BroadcastHashJoin/fixpointTask=false/output=query/test_out/log=error ======
+
+Load: 1682 ms
+
+== Datalog ObjectText ==
+database({arc(A: integer, B: integer)}).
+tc(A,B) <- arc(A,B).
+tc(A,B) <- tc(A,C), arc(C,B).
+
+== Datalog Query ==
+tc(A, B).
+== Compiled PCG Tree ==
+
+PCGOrNode(tc_ff_ff(A, B), #Children: 1, predicateType: DERIVED, isRecursive: Yes)
+ Clique 1
+  Parents: 
+   1) PCGOrNode(tc_ff_ff(A, C), #Children: 1, predicateType: DERIVED, isRecursive: Yes)
+   2) PCGOrNode(tc_ff_ff(A, B), #Children: 1, predicateType: DERIVED, isRecursive: Yes)
+  Clique Predicates: 
+  1) CliquePredicate(tc_ff, binding: ff, #ExitRules: 1, #RecursiveRules: 1)
+   Exit Rules:
+    PCGAndNode(tc_ff_ff(A, B), rule#: 1, #Children: 1, predicateType: DERIVED)
+     PCGOrNode(arc_ff_ff(A, B), #Children: 1, predicateType: BASE)
+      arc(A:integer, B:integer)
+   Recursive Rules:
+    PCGAndNode(tc_ff_ff(A, B), rule#: 2, #Children: 2, predicateType: DERIVED)
+     PCGOrNode(tc_ff_ff(A, C), #Children: 1, predicateType: DERIVED, isRecursive: Yes)
+     PCGOrNode(arc_bf_bf(C, B), #Children: 1, predicateType: BASE)
+      arc(A:integer, B:integer)
+ End Clique 1
+== Operator Program ==
+
+0: tc(Var_1, Var_2) <RECURSIVE_CLIQUE>(Recursion: NONLINEAR, Evaluation Type: SemiNaive)
+Exit Rules: 
+ 1: arc(A, B) <BASE_RELATION>
+Recursive Rules: 
+ 1: (A, B) <PROJECT>
+  2: (0.C = 1.A) <JOIN>
+   3: tc(A, C) <RECURSIVE_RELATION>
+   3: arc(A, B) <BASE_RELATION>
+
+== Parsed Logical Plan ==
+'SubqueryAlias tc
++- 'Project [unresolvedalias('tc1.A AS Var_1#14, None), unresolvedalias('arc2.B AS Var_2#15, None)]
+   +- 'Recursion tc, [Driver], [1, 0]
+      :- 'UnresolvedRelation `arc`
+      +- 'Project ['tc1.A, 'arc2.B]
+         +- 'Join Inner, ('tc1.C = 'arc2.A)
+            :- SubqueryAlias tc1
+            :  +- LinearRecursiveRelation tc, [A#12, C#13], [1, 0]
+            +- 'BroadcastHint
+               +- 'SubqueryAlias arc2
+                  +- 'Project [*]
+                     +- 'UnresolvedRelation `arc`
+
+== Analyzed Logical Plan ==
+Var_1: int, Var_2: int
+SubqueryAlias tc
++- Project [A#12 AS Var_1#14, B#1 AS Var_2#15]
+   +- Recursion tc, [Driver], [1, 0]
+      :- SubqueryAlias arc
+      :  +- LogicalRDD [A#0, B#1]
+      +- Project [A#12, B#1]
+         +- Join Inner, (C#13 = A#0)
+            :- SubqueryAlias tc1
+            :  +- LinearRecursiveRelation tc, [A#12, C#13], [1, 0]
+            +- BroadcastHint
+               +- SubqueryAlias arc2
+                  +- Project [A#0, B#1]
+                     +- SubqueryAlias arc
+                        +- LogicalRDD [A#0, B#1]
+
+== Optimized Logical Plan ==
+Project [A#12 AS Var_1#14, B#1 AS Var_2#15]
++- Recursion tc, [Driver], [1, 0]
+   :- LogicalRDD [A#0, B#1]
+   +- Project [A#12, B#1]
+      +- Join Inner, (C#13 = A#0)
+         :- LinearRecursiveRelation tc, [A#12, C#13], [1, 0]
+         +- BroadcastHint
+            +- Project [A#0, B#1]
+               +- LogicalRDD [A#0, B#1]
+
+== Physical Plan ==
+*Project [A#12 AS Var_1#14, B#1 AS Var_2#15]
++- Recursion [A#12,B#1] (Driver) [tc][1,0]
+   :- ExitExchange tc, hashpartitioning(A#0, 3)
+   :  +- Scan ExistingRDD[A#0,B#1]
+   +- RecExchange tc, false, hashpartitioning(A#12, 3)
+      +- *Project [A#12, B#1]
+         +- *BroadcastHashJoin [C#13], [A#0], Inner, BuildRight
+            :- *LinearRecursiveRelation [A#12,C#13](tc)
+            +- BroadcastExchange HashedRelationBroadcastMode(List(cast(input[0, int, true] as bigint)))
+               +- *Project [A#0, B#1]
+                  +- Scan ExistingRDD[A#0,B#1]
+
+Compile Datalog: 364 ms
+Recursive Iterations: 78 ms
+Execution (Collect): 913 ms
+Total: 2961 ms
+Result Size: 11
+
+====== 11/20 15:00:10 sssp/warc=s1/codegen=true/partitions=3/joinType=ShuffleHashJoin/fixpointTask=false/output=query/test_out/startvertex=1/log=error ======
+
+Load: 38 ms
+
+== Datalog ObjectText ==
+database({warc(From: integer, To: integer, Cost: integer)}).
+sp(To, mmin<C>) <- To=1, C=0.
+sp(To2, mmin<C>) <- sp(To1, C1), warc(To1, To2, C2), C=C1+C2.
+result(To, min<C>) <- sp(To, C).
+
+== Datalog Query ==
+result(T, C).
+== Compiled PCG Tree ==
+
+PCGOrNode(result_ff_ff(T, C), #Children: 1, predicateType: DERIVED, isRecursive: No)
+ PCGAndNode(result_ff_ff(To, Aggr_1), rule#: 3.2, #Children: 1, predicateType: DERIVED)
+  PCGOrNode(aggregate_result_ff_ff(To, min<C>), #Children: 1, predicateType: BUILT_IN, isRecursive: No)
+   PCGAndNode(aggregate_result_ff_ff(To, C), rule#: 3.1, #Children: 1, predicateType: DERIVED)
+    PCGOrNode(sp_ff_ff(To, C), #Children: 1, predicateType: DERIVED, isRecursive: Yes)
+     Clique 1
+      Parents: 
+       1) PCGOrNode(sp_ff_ff(To1, C1), #Children: 1, predicateType: DERIVED, isRecursive: Yes)
+       2) PCGOrNode(fs_aggregate_sp_2_fff_fff(To2, mmin<C>, FSAggr_1), #Children: 1, predicateType: BUILT_IN, isRecursive: Yes)
+       3) PCGOrNode(sp_ff_ff(To, C), #Children: 1, predicateType: DERIVED, isRecursive: Yes)
+      Clique Predicates: 
+      1) CliquePredicate(fs_aggregate_sp_2_fff, binding: fff, #ExitRules: 0, #RecursiveRules: 1)
+       Exit Rules: NONE
+       Recursive Rules:
+        PCGAndNode(fs_aggregate_sp_2_fff_fff(To2, C, nil), rule#: 2.1, #Children: 3, predicateType: DERIVED)
+         PCGOrNode(sp_ff_ff(To1, C1), #Children: 1, predicateType: DERIVED, isRecursive: Yes)
+         PCGOrNode(warc_bff_bff(To1, To2, C2), #Children: 1, predicateType: BASE)
+          warc(From:integer, To:integer, Cost:integer)
+         PCGOrNode(C =_fb_fb +(C1, C2), #Children: 0, predicateType: BUILT_IN, isRecursive: No)
+      2) CliquePredicate(sp_ff, binding: ff, #ExitRules: 1, #RecursiveRules: 1)
+       Exit Rules:
+        PCGAndNode(sp_ff_ff(To, FSAggr_1), rule#: 1.2, #Children: 1, predicateType: DERIVED)
+         PCGOrNode(fs_aggregate_sp_1_fff_fff(To, mmin<C>, FSAggr_1), #Children: 1, predicateType: BUILT_IN, isRecursive: No)
+          PCGAndNode(fs_aggregate_sp_1_fff_fff(To, C, nil), rule#: 1.1, #Children: 2, predicateType: DERIVED)
+           PCGOrNode(To =_fb_fb 1, #Children: 0, predicateType: BUILT_IN, isRecursive: No)
+           PCGOrNode(C =_fb_fb 0, #Children: 0, predicateType: BUILT_IN, isRecursive: No)
+       Recursive Rules:
+        PCGAndNode(sp_ff_ff(To2, FSAggr_1), rule#: 2.2, #Children: 1, predicateType: DERIVED)
+         PCGOrNode(fs_aggregate_sp_2_fff_fff(To2, mmin<C>, FSAggr_1), #Children: 1, predicateType: BUILT_IN, isRecursive: Yes)
+     End Clique 1
+== Operator Program ==
+
+0: (Var_1 as T, min(Var_2) as C) <AGGREGATE>
+ 1: sp(Var_1, Var_2) <RECURSIVE_CLIQUE>(Recursion: NONLINEAR, Evaluation Type: MonotonicSemiNaive)
+ Exit Rules: 
+  2: (To, mmin(C) as FSAggr_1) <AGGREGATE_FS>
+   3: TUPLE(1 as To, 0 as C) <TUPLE>
+ Recursive Rules: 
+  2: (To, mmin(C) as FSAggr_1) <AGGREGATE_FS>
+   3: (To, C1 + Cost as C) <PROJECT>
+    4: (0.To1 = 1.From) <JOIN>
+     5: sp(To1, C1) <RECURSIVE_RELATION>
+     5: warc(From, To, Cost) <BASE_RELATION>
+
+== Parsed Logical Plan ==
+'SubqueryAlias aggregate_result
++- 'Aggregate ['sp.Var_1], [unresolvedalias('sp.Var_1 AS T#41, None), unresolvedalias('min('sp.Var_2) AS C#42, None)]
+   +- 'SubqueryAlias sp
+      +- 'Project [unresolvedalias('To AS Var_1#39, None), unresolvedalias('FSAggr_1 AS Var_2#40, None)]
+         +- 'AggregateRecursion sp, [Driver], [1, 0]
+            :- 'SubqueryAlias fs_aggregate_sp_1
+            :  +- 'MonotonicAggregate ['TUPLE.To], [unresolvedalias('TUPLE.To AS To#32, None), unresolvedalias('mmin('TUPLE.C) AS FSAggr_1#33, None)], [1, 0]
+            :     +- SubqueryAlias TUPLE
+            :        +- LocalRelation [To#30, C#31]
+            +- 'SubqueryAlias fs_aggregate_sp_2
+               +- 'MonotonicAggregate ['warc.To], [unresolvedalias('warc.To AS To#37, None), unresolvedalias('mmin('C1) AS FSAggr_1#38, None)], [1, 0]
+                  +- 'Project ['warc.To, unresolvedalias(('sp1.C1 + 'warc.Cost) AS C1#36, None)]
+                     +- 'Join Inner, ('sp1.To1 = 'warc.From)
+                        :- SubqueryAlias sp1
+                        :  +- AggregateRelation sp, [To1#34, C1#35], [1, 0]
+                        +- 'CacheHint
+                           +- 'UnresolvedRelation `warc`
+
+== Analyzed Logical Plan ==
+T: int, C: int
+SubqueryAlias aggregate_result
++- Aggregate [Var_1#39], [Var_1#39 AS T#41, min(Var_2#40) AS C#42]
+   +- SubqueryAlias sp
+      +- Project [To#37 AS Var_1#39, FSAggr_1#38 AS Var_2#40]
+         +- AggregateRecursion sp, [Driver], [1, 0]
+            :- SubqueryAlias fs_aggregate_sp_1
+            :  +- MonotonicAggregate [To#30], [To#30 AS To#32, mmin(C#31) AS FSAggr_1#33], [1, 0]
+            :     +- SubqueryAlias TUPLE
+            :        +- LocalRelation [To#30, C#31]
+            +- SubqueryAlias fs_aggregate_sp_2
+               +- MonotonicAggregate [To#17], [To#17 AS To#37, mmin(C1#36) AS FSAggr_1#38], [1, 0]
+                  +- Project [To#17, (C1#35 + Cost#18) AS C1#36]
+                     +- Join Inner, (To1#34 = From#16)
+                        :- SubqueryAlias sp1
+                        :  +- AggregateRelation sp, [To1#34, C1#35], [1, 0]
+                        +- CacheHint
+                           +- SubqueryAlias warc
+                              +- LogicalRDD [From#16, To#17, Cost#18]
+
+== Optimized Logical Plan ==
+Aggregate [Var_1#39], [Var_1#39 AS T#41, min(Var_2#40) AS C#42]
++- Project [To#37 AS Var_1#39, FSAggr_1#38 AS Var_2#40]
+   +- AggregateRecursion sp, [Driver], [1, 0]
+      :- MonotonicAggregate [To#30], [To#30 AS To#32, mmin(C#31) AS FSAggr_1#33], [1, 0]
+      :  +- LocalRelation [To#30, C#31]
+      +- MonotonicAggregate [To#17], [To#17 AS To#37, mmin(C1#36) AS FSAggr_1#38], [1, 0]
+         +- Project [To#17, (C1#35 + Cost#18) AS C1#36]
+            +- Join Inner, (To1#34 = From#16)
+               :- AggregateRelation sp, [To1#34, C1#35], [1, 0]
+               +- CacheHint
+                  +- LogicalRDD [From#16, To#17, Cost#18]
+
+== Physical Plan ==
+*HashAggregate(keys=[Var_1#39], functions=[min(Var_2#40)], output=[T#41, C#42])
++- Exchange hashpartitioning(Var_1#39, 3)
+   +- *HashAggregate(keys=[Var_1#39], functions=[partial_min(Var_2#40)], output=[Var_1#39, min#47])
+      +- *Project [To#37 AS Var_1#39, FSAggr_1#38 AS Var_2#40]
+         +- AggregateRecursion [To#37,FSAggr_1#38] (Driver) [sp][1,0]
+            :- ExitAggrExchange(key=[To#30], functions=[mmin(C#31)], output=[To#30,mmin#50], iterType=Tungsten) hashpartitioning(To#30 AS To#32, 3)
+            :  +- *HashAggregate(keys=[To#30], functions=[partial_mmin(C#31)], output=[To#30, mmin#50])
+            :     +- LocalTableScan [To#30, C#31]
+            +- RecAggrExchange(key=[To#17], functions=[mmin(C1#36)], output=[To#37,FSAggr_1#38], iterType=Tungsten) hashpartitioning(To#17 AS To#37, 3)
+               +- *HashAggregate(keys=[To#17], functions=[partial_mmin(C1#36)], output=[To#17, mmin#53])
+                  +- *Project [To#17, (C1#35 + Cost#18) AS C1#36]
+                     +- *CacheBuildSideShuffleHashJoin [To1#34], [From#16], Inner, BuildRight
+                        :- *AggregateRelation [To1#34,C1#35](sp)
+                        +- Exchange hashpartitioning(From#16, 3)
+                           +- Scan ExistingRDD[From#16,To#17,Cost#18]
+
+Compile Datalog: 204 ms
+Recursive Iterations: 132 ms
+Execution (Collect): 703 ms
+Total: 945 ms
+Result Size: 5
+
+====== 11/20 15:00:47 sssp/warc=s1/codegen=true/partitions=3/joinType=ShuffleHashJoin/fixpointTask=false/output=query/test_out/startvertex=1/log=error ======
+
+Load: 1677 ms
+
+== Datalog ObjectText ==
+database({warc(From: integer, To: integer, Cost: integer)}).
+sp(To, mmin<C>) <- To=1, C=0.
+sp(To2, mmin<C>) <- sp(To1, C1), warc(To1, To2, C2), C=C1+C2.
+result(To, min<C>) <- sp(To, C).
+
+== Datalog Query ==
+result(T, C).
+== Compiled PCG Tree ==
+
+PCGOrNode(result_ff_ff(T, C), #Children: 1, predicateType: DERIVED, isRecursive: No)
+ PCGAndNode(result_ff_ff(To, Aggr_1), rule#: 3.2, #Children: 1, predicateType: DERIVED)
+  PCGOrNode(aggregate_result_ff_ff(To, min<C>), #Children: 1, predicateType: BUILT_IN, isRecursive: No)
+   PCGAndNode(aggregate_result_ff_ff(To, C), rule#: 3.1, #Children: 1, predicateType: DERIVED)
+    PCGOrNode(sp_ff_ff(To, C), #Children: 1, predicateType: DERIVED, isRecursive: Yes)
+     Clique 1
+      Parents: 
+       1) PCGOrNode(sp_ff_ff(To1, C1), #Children: 1, predicateType: DERIVED, isRecursive: Yes)
+       2) PCGOrNode(fs_aggregate_sp_2_fff_fff(To2, mmin<C>, FSAggr_1), #Children: 1, predicateType: BUILT_IN, isRecursive: Yes)
+       3) PCGOrNode(sp_ff_ff(To, C), #Children: 1, predicateType: DERIVED, isRecursive: Yes)
+      Clique Predicates: 
+      1) CliquePredicate(fs_aggregate_sp_2_fff, binding: fff, #ExitRules: 0, #RecursiveRules: 1)
+       Exit Rules: NONE
+       Recursive Rules:
+        PCGAndNode(fs_aggregate_sp_2_fff_fff(To2, C, nil), rule#: 2.1, #Children: 3, predicateType: DERIVED)
+         PCGOrNode(sp_ff_ff(To1, C1), #Children: 1, predicateType: DERIVED, isRecursive: Yes)
+         PCGOrNode(warc_bff_bff(To1, To2, C2), #Children: 1, predicateType: BASE)
+          warc(From:integer, To:integer, Cost:integer)
+         PCGOrNode(C =_fb_fb +(C1, C2), #Children: 0, predicateType: BUILT_IN, isRecursive: No)
+      2) CliquePredicate(sp_ff, binding: ff, #ExitRules: 1, #RecursiveRules: 1)
+       Exit Rules:
+        PCGAndNode(sp_ff_ff(To, FSAggr_1), rule#: 1.2, #Children: 1, predicateType: DERIVED)
+         PCGOrNode(fs_aggregate_sp_1_fff_fff(To, mmin<C>, FSAggr_1), #Children: 1, predicateType: BUILT_IN, isRecursive: No)
+          PCGAndNode(fs_aggregate_sp_1_fff_fff(To, C, nil), rule#: 1.1, #Children: 2, predicateType: DERIVED)
+           PCGOrNode(To =_fb_fb 1, #Children: 0, predicateType: BUILT_IN, isRecursive: No)
+           PCGOrNode(C =_fb_fb 0, #Children: 0, predicateType: BUILT_IN, isRecursive: No)
+       Recursive Rules:
+        PCGAndNode(sp_ff_ff(To2, FSAggr_1), rule#: 2.2, #Children: 1, predicateType: DERIVED)
+         PCGOrNode(fs_aggregate_sp_2_fff_fff(To2, mmin<C>, FSAggr_1), #Children: 1, predicateType: BUILT_IN, isRecursive: Yes)
+     End Clique 1
+== Operator Program ==
+
+0: (Var_1 as T, min(Var_2) as C) <AGGREGATE>
+ 1: sp(Var_1, Var_2) <RECURSIVE_CLIQUE>(Recursion: NONLINEAR, Evaluation Type: MonotonicSemiNaive)
+ Exit Rules: 
+  2: (To, mmin(C) as FSAggr_1) <AGGREGATE_FS>
+   3: TUPLE(1 as To, 0 as C) <TUPLE>
+ Recursive Rules: 
+  2: (To, mmin(C) as FSAggr_1) <AGGREGATE_FS>
+   3: (To, C1 + Cost as C) <PROJECT>
+    4: (0.To1 = 1.From) <JOIN>
+     5: sp(To1, C1) <RECURSIVE_RELATION>
+     5: warc(From, To, Cost) <BASE_RELATION>
+
+== Parsed Logical Plan ==
+'SubqueryAlias aggregate_result
++- 'Aggregate ['sp.Var_1], [unresolvedalias('sp.Var_1 AS T#25, None), unresolvedalias('min('sp.Var_2) AS C#26, None)]
+   +- 'SubqueryAlias sp
+      +- 'Project [unresolvedalias('To AS Var_1#23, None), unresolvedalias('FSAggr_1 AS Var_2#24, None)]
+         +- 'AggregateRecursion sp, [Driver], [1, 0]
+            :- 'SubqueryAlias fs_aggregate_sp_1
+            :  +- 'MonotonicAggregate ['TUPLE.To], [unresolvedalias('TUPLE.To AS To#16, None), unresolvedalias('mmin('TUPLE.C) AS FSAggr_1#17, None)], [1, 0]
+            :     +- SubqueryAlias TUPLE
+            :        +- LocalRelation [To#14, C#15]
+            +- 'SubqueryAlias fs_aggregate_sp_2
+               +- 'MonotonicAggregate ['warc.To], [unresolvedalias('warc.To AS To#21, None), unresolvedalias('mmin('C1) AS FSAggr_1#22, None)], [1, 0]
+                  +- 'Project ['warc.To, unresolvedalias(('sp1.C1 + 'warc.Cost) AS C1#20, None)]
+                     +- 'Join Inner, ('sp1.To1 = 'warc.From)
+                        :- SubqueryAlias sp1
+                        :  +- AggregateRelation sp, [To1#18, C1#19], [1, 0]
+                        +- 'CacheHint
+                           +- 'UnresolvedRelation `warc`
+
+== Analyzed Logical Plan ==
+T: int, C: int
+SubqueryAlias aggregate_result
++- Aggregate [Var_1#23], [Var_1#23 AS T#25, min(Var_2#24) AS C#26]
+   +- SubqueryAlias sp
+      +- Project [To#21 AS Var_1#23, FSAggr_1#22 AS Var_2#24]
+         +- AggregateRecursion sp, [Driver], [1, 0]
+            :- SubqueryAlias fs_aggregate_sp_1
+            :  +- MonotonicAggregate [To#14], [To#14 AS To#16, mmin(C#15) AS FSAggr_1#17], [1, 0]
+            :     +- SubqueryAlias TUPLE
+            :        +- LocalRelation [To#14, C#15]
+            +- SubqueryAlias fs_aggregate_sp_2
+               +- MonotonicAggregate [To#1], [To#1 AS To#21, mmin(C1#20) AS FSAggr_1#22], [1, 0]
+                  +- Project [To#1, (C1#19 + Cost#2) AS C1#20]
+                     +- Join Inner, (To1#18 = From#0)
+                        :- SubqueryAlias sp1
+                        :  +- AggregateRelation sp, [To1#18, C1#19], [1, 0]
+                        +- CacheHint
+                           +- SubqueryAlias warc
+                              +- LogicalRDD [From#0, To#1, Cost#2]
+
+== Optimized Logical Plan ==
+Aggregate [Var_1#23], [Var_1#23 AS T#25, min(Var_2#24) AS C#26]
++- Project [To#21 AS Var_1#23, FSAggr_1#22 AS Var_2#24]
+   +- AggregateRecursion sp, [Driver], [1, 0]
+      :- MonotonicAggregate [To#14], [To#14 AS To#16, mmin(C#15) AS FSAggr_1#17], [1, 0]
+      :  +- LocalRelation [To#14, C#15]
+      +- MonotonicAggregate [To#1], [To#1 AS To#21, mmin(C1#20) AS FSAggr_1#22], [1, 0]
+         +- Project [To#1, (C1#19 + Cost#2) AS C1#20]
+            +- Join Inner, (To1#18 = From#0)
+               :- AggregateRelation sp, [To1#18, C1#19], [1, 0]
+               +- CacheHint
+                  +- LogicalRDD [From#0, To#1, Cost#2]
+
+== Physical Plan ==
+*HashAggregate(keys=[Var_1#23], functions=[min(Var_2#24)], output=[T#25, C#26])
++- Exchange hashpartitioning(Var_1#23, 3)
+   +- *HashAggregate(keys=[Var_1#23], functions=[partial_min(Var_2#24)], output=[Var_1#23, min#31])
+      +- *Project [To#21 AS Var_1#23, FSAggr_1#22 AS Var_2#24]
+         +- AggregateRecursion [To#21,FSAggr_1#22] (Driver) [sp][1,0]
+            :- ExitAggrExchange(key=[To#14], functions=[mmin(C#15)], output=[To#14,mmin#34], iterType=Tungsten) hashpartitioning(To#14 AS To#16, 3)
+            :  +- *HashAggregate(keys=[To#14], functions=[partial_mmin(C#15)], output=[To#14, mmin#34])
+            :     +- LocalTableScan [To#14, C#15]
+            +- RecAggrExchange(key=[To#1], functions=[mmin(C1#20)], output=[To#21,FSAggr_1#22], iterType=Tungsten) hashpartitioning(To#1 AS To#21, 3)
+               +- *HashAggregate(keys=[To#1], functions=[partial_mmin(C1#20)], output=[To#1, mmin#37])
+                  +- *Project [To#1, (C1#19 + Cost#2) AS C1#20]
+                     +- *CacheBuildSideShuffleHashJoin [To1#18], [From#0], Inner, BuildRight
+                        :- *AggregateRelation [To1#18,C1#19](sp)
+                        +- Exchange hashpartitioning(From#0, 3)
+                           +- Scan ExistingRDD[From#0,To#1,Cost#2]
+
+Compile Datalog: 749 ms
+Recursive Iterations: 199 ms
+Execution (Collect): 1188 ms
+Total: 3615 ms
+Result Size: 5
+
+====== 11/20 15:01:48 tc_ll/arc=arc/codegen=true/partitions=3/joinType=BroadcastHashJoin/fixpointTask=false/output=query/test_out/log=error ======
+
+Load: 1706 ms
+
+RamSQL Parse: 65 ms
+WITH recursive tc (A, B)
+AS  (SELECT A, B FROM arc)
+UNION
+(SELECT tc.A, arc.B FROM tc, arc WHERE tc.B = arc.A)
+SELECT A, B FROM tc
+
+RamSQL Analyze: 114 ms
+RamSQL Optimize: 25 ms
+RamSQL Generate rules of `tc`: 164 ms
+
+RamSQL Analyze: 2 ms
+RamSQL Optimize: 1 ms
+RamSQL Generate rules of outermost query: 4 ms
+
+== Datalog ObjectText ==
+database({arc(A: integer, B: integer)}).
+tc(A0, B1) <- arc(A0, B1).
+tc(G11, B1) <- tc(G11, G10), arc(G10, B1).
+result(A6, B7) <- tc(A6, B7).
+
+== Datalog Query ==
+result(A6, B7).
+== Compiled PCG Tree ==
+
+PCGOrNode(result_ff_ff(A6, B7), #Children: 1, predicateType: DERIVED, isRecursive: No)
+ PCGAndNode(result_ff_ff(A6, B7), rule#: 3, #Children: 1, predicateType: DERIVED)
+  PCGOrNode(tc_ff_ff(A6, B7), #Children: 1, predicateType: DERIVED, isRecursive: Yes)
+   Clique 1
+    Parents: 
+     1) PCGOrNode(tc_ff_ff(G11, G10), #Children: 1, predicateType: DERIVED, isRecursive: Yes)
+     2) PCGOrNode(tc_ff_ff(A6, B7), #Children: 1, predicateType: DERIVED, isRecursive: Yes)
+    Clique Predicates: 
+    1) CliquePredicate(tc_ff, binding: ff, #ExitRules: 1, #RecursiveRules: 1)
+     Exit Rules:
+      PCGAndNode(tc_ff_ff(A0, B1), rule#: 1, #Children: 1, predicateType: DERIVED)
+       PCGOrNode(arc_ff_ff(A0, B1), #Children: 1, predicateType: BASE)
+        arc(A:integer, B:integer)
+     Recursive Rules:
+      PCGAndNode(tc_ff_ff(G11, B1), rule#: 2, #Children: 2, predicateType: DERIVED)
+       PCGOrNode(tc_ff_ff(G11, G10), #Children: 1, predicateType: DERIVED, isRecursive: Yes)
+       PCGOrNode(arc_bf_bf(G10, B1), #Children: 1, predicateType: BASE)
+        arc(A:integer, B:integer)
+   End Clique 1
+== Operator Program ==
+
+0: tc(Var_1, Var_2) <RECURSIVE_CLIQUE>(Recursion: NONLINEAR, Evaluation Type: SemiNaive)
+Exit Rules: 
+ 1: arc(A, B) <BASE_RELATION>
+Recursive Rules: 
+ 1: (G11, B) <PROJECT>
+  2: (0.G10 = 1.A) <JOIN>
+   3: tc(G11, G10) <RECURSIVE_RELATION>
+   3: arc(A, B) <BASE_RELATION>
+
+== Parsed Logical Plan ==
+'SubqueryAlias tc
++- 'Project [unresolvedalias('tc1.G11 AS Var_1#22, None), unresolvedalias('arc2.B AS Var_2#23, None)]
+   +- 'Recursion tc, [Driver], [1, 0]
+      :- 'UnresolvedRelation `arc`
+      +- 'Project ['tc1.G11, 'arc2.B]
+         +- 'Join Inner, ('tc1.G10 = 'arc2.A)
+            :- SubqueryAlias tc1
+            :  +- LinearRecursiveRelation tc, [G11#20, G10#21], [1, 0]
+            +- 'BroadcastHint
+               +- 'SubqueryAlias arc2
+                  +- 'Project [*]
+                     +- 'UnresolvedRelation `arc`
+
+== Analyzed Logical Plan ==
+Var_1: int, Var_2: int
+SubqueryAlias tc
++- Project [G11#20 AS Var_1#22, B#1 AS Var_2#23]
+   +- Recursion tc, [Driver], [1, 0]
+      :- SubqueryAlias arc
+      :  +- LogicalRDD [A#0, B#1]
+      +- Project [G11#20, B#1]
+         +- Join Inner, (G10#21 = A#0)
+            :- SubqueryAlias tc1
+            :  +- LinearRecursiveRelation tc, [G11#20, G10#21], [1, 0]
+            +- BroadcastHint
+               +- SubqueryAlias arc2
+                  +- Project [A#0, B#1]
+                     +- SubqueryAlias arc
+                        +- LogicalRDD [A#0, B#1]
+
+== Optimized Logical Plan ==
+Project [G11#20 AS Var_1#22, B#1 AS Var_2#23]
++- Recursion tc, [Driver], [1, 0]
+   :- LogicalRDD [A#0, B#1]
+   +- Project [G11#20, B#1]
+      +- Join Inner, (G10#21 = A#0)
+         :- LinearRecursiveRelation tc, [G11#20, G10#21], [1, 0]
+         +- BroadcastHint
+            +- Project [A#0, B#1]
+               +- LogicalRDD [A#0, B#1]
+
+== Physical Plan ==
+*Project [G11#20 AS Var_1#22, B#1 AS Var_2#23]
++- Recursion [G11#20,B#1] (Driver) [tc][1,0]
+   :- ExitExchange tc, hashpartitioning(A#0, 3)
+   :  +- Scan ExistingRDD[A#0,B#1]
+   +- RecExchange tc, false, hashpartitioning(G11#20, 3)
+      +- *Project [G11#20, B#1]
+         +- *BroadcastHashJoin [G10#21], [A#0], Inner, BuildRight
+            :- *LinearRecursiveRelation [G11#20,G10#21](tc)
+            +- BroadcastExchange HashedRelationBroadcastMode(List(cast(input[0, int, true] as bigint)))
+               +- *Project [A#0, B#1]
+                  +- Scan ExistingRDD[A#0,B#1]
+
+Recursive Iterations: 77 ms
+[Success - Execution Finished]
+Compile RamSQL: 519 ms
+Execution (Collect): 929 ms
+Total: 3169 ms
+Result Size: 11
+
+====== 11/20 15:01:51 sssp/warc=s1/codegen=true/partitions=3/joinType=ShuffleHashJoin/fixpointTask=false/output=query/test_out/startvertex=1/log=error ======
+
+Load: 38 ms
+
+RamSQL Parse: 17 ms
+WITH recursive sp (To, min() AS Cost)
+AS  (SELECT 1, 0)
+UNION
+(SELECT warc.To, sp.Cost + warc.Cost FROM sp, warc
+WHERE sp.To = warc.From)
+SELECT To, Cost FROM sp
+
+RamSQL Analyze: 43 ms
+RamSQL Optimize: 5 ms
+RamSQL Generate rules of `sp`: 50 ms
+
+RamSQL Analyze: 1 ms
+RamSQL Optimize: 1 ms
+RamSQL Generate rules of outermost query: 2 ms
+
+== Datalog ObjectText ==
+database({warc(From: integer, To: integer, Cost: integer)}).
+sp(C035, mmin<C136>) <- C035 = 1, C136 = 0.
+sp(To25, mmin<C137>) <- sp(G39, Cost34), warc(G39, To25, Cost26), C137 = (Cost34 + Cost26).
+result(To33, Cost34) <- sp(To33, Cost34).
+
+== Datalog Query ==
+result(To33, Cost34).
+== Compiled PCG Tree ==
+
+PCGOrNode(result_ff_ff(To33, Cost34), #Children: 1, predicateType: DERIVED, isRecursive: No)
+ PCGAndNode(result_ff_ff(To33, Cost34), rule#: 3, #Children: 1, predicateType: DERIVED)
+  PCGOrNode(sp_ff_ff(To33, Cost34), #Children: 1, predicateType: DERIVED, isRecursive: Yes)
+   Clique 1
+    Parents: 
+     1) PCGOrNode(sp_ff_ff(G39, Cost34), #Children: 1, predicateType: DERIVED, isRecursive: Yes)
+     2) PCGOrNode(fs_aggregate_sp_2_fff_fff(To25, mmin<C137>, FSAggr_1), #Children: 1, predicateType: BUILT_IN, isRecursive: Yes)
+     3) PCGOrNode(sp_ff_ff(To33, Cost34), #Children: 1, predicateType: DERIVED, isRecursive: Yes)
+    Clique Predicates: 
+    1) CliquePredicate(fs_aggregate_sp_2_fff, binding: fff, #ExitRules: 0, #RecursiveRules: 1)
+     Exit Rules: NONE
+     Recursive Rules:
+      PCGAndNode(fs_aggregate_sp_2_fff_fff(To25, C137, nil), rule#: 2.1, #Children: 3, predicateType: DERIVED)
+       PCGOrNode(sp_ff_ff(G39, Cost34), #Children: 1, predicateType: DERIVED, isRecursive: Yes)
+       PCGOrNode(warc_bff_bff(G39, To25, Cost26), #Children: 1, predicateType: BASE)
+        warc(From:integer, To:integer, Cost:integer)
+       PCGOrNode(C137 =_fb_fb +(Cost34, Cost26), #Children: 0, predicateType: BUILT_IN, isRecursive: No)
+    2) CliquePredicate(sp_ff, binding: ff, #ExitRules: 1, #RecursiveRules: 1)
+     Exit Rules:
+      PCGAndNode(sp_ff_ff(C035, FSAggr_1), rule#: 1.2, #Children: 1, predicateType: DERIVED)
+       PCGOrNode(fs_aggregate_sp_1_fff_fff(C035, mmin<C136>, FSAggr_1), #Children: 1, predicateType: BUILT_IN, isRecursive: No)
+        PCGAndNode(fs_aggregate_sp_1_fff_fff(C035, C136, nil), rule#: 1.1, #Children: 2, predicateType: DERIVED)
+         PCGOrNode(C035 =_fb_fb 1, #Children: 0, predicateType: BUILT_IN, isRecursive: No)
+         PCGOrNode(C136 =_fb_fb 0, #Children: 0, predicateType: BUILT_IN, isRecursive: No)
+     Recursive Rules:
+      PCGAndNode(sp_ff_ff(To25, FSAggr_1), rule#: 2.2, #Children: 1, predicateType: DERIVED)
+       PCGOrNode(fs_aggregate_sp_2_fff_fff(To25, mmin<C137>, FSAggr_1), #Children: 1, predicateType: BUILT_IN, isRecursive: Yes)
+   End Clique 1
+== Operator Program ==
+
+0: sp(Var_1, Var_2) <RECURSIVE_CLIQUE>(Recursion: NONLINEAR, Evaluation Type: MonotonicSemiNaive)
+Exit Rules: 
+ 1: (C035, mmin(C136) as FSAggr_1) <AGGREGATE_FS>
+  2: TUPLE(1 as C035, 0 as C136) <TUPLE>
+Recursive Rules: 
+ 1: (To, mmin(C137) as FSAggr_1) <AGGREGATE_FS>
+  2: (To, Cost34 + Cost as C137) <PROJECT>
+   3: (0.G39 = 1.From) <JOIN>
+    4: sp(G39, Cost34) <RECURSIVE_RELATION>
+    4: warc(From, To, Cost) <BASE_RELATION>
+
+== Parsed Logical Plan ==
+'SubqueryAlias sp
++- 'Project [unresolvedalias('To AS Var_1#57, None), unresolvedalias('FSAggr_1 AS Var_2#58, None)]
+   +- 'AggregateRecursion sp, [Driver], [1, 0]
+      :- 'SubqueryAlias fs_aggregate_sp_1
+      :  +- 'MonotonicAggregate ['TUPLE.C035], [unresolvedalias('TUPLE.C035 AS C035#50, None), unresolvedalias('mmin('TUPLE.C136) AS FSAggr_1#51, None)], [1, 0]
+      :     +- SubqueryAlias TUPLE
+      :        +- LocalRelation [C035#48, C136#49]
+      +- 'SubqueryAlias fs_aggregate_sp_2
+         +- 'MonotonicAggregate ['warc.To], [unresolvedalias('warc.To AS To#55, None), unresolvedalias('mmin('C1) AS FSAggr_1#56, None)], [1, 0]
+            +- 'Project ['warc.To, unresolvedalias(('sp1.Cost34 + 'warc.Cost) AS C1#54, None)]
+               +- 'Join Inner, ('sp1.G39 = 'warc.From)
+                  :- SubqueryAlias sp1
+                  :  +- AggregateRelation sp, [G39#52, Cost34#53], [1, 0]
+                  +- 'CacheHint
+                     +- 'UnresolvedRelation `warc`
+
+== Analyzed Logical Plan ==
+Var_1: int, Var_2: int
+SubqueryAlias sp
++- Project [To#55 AS Var_1#57, FSAggr_1#56 AS Var_2#58]
+   +- AggregateRecursion sp, [Driver], [1, 0]
+      :- SubqueryAlias fs_aggregate_sp_1
+      :  +- MonotonicAggregate [C035#48], [C035#48 AS C035#50, mmin(C136#49) AS FSAggr_1#51], [1, 0]
+      :     +- SubqueryAlias TUPLE
+      :        +- LocalRelation [C035#48, C136#49]
+      +- SubqueryAlias fs_aggregate_sp_2
+         +- MonotonicAggregate [To#25], [To#25 AS To#55, mmin(C1#54) AS FSAggr_1#56], [1, 0]
+            +- Project [To#25, (Cost34#53 + Cost#26) AS C1#54]
+               +- Join Inner, (G39#52 = From#24)
+                  :- SubqueryAlias sp1
+                  :  +- AggregateRelation sp, [G39#52, Cost34#53], [1, 0]
+                  +- CacheHint
+                     +- SubqueryAlias warc
+                        +- LogicalRDD [From#24, To#25, Cost#26]
+
+== Optimized Logical Plan ==
+Project [To#55 AS Var_1#57, FSAggr_1#56 AS Var_2#58]
++- AggregateRecursion sp, [Driver], [1, 0]
+   :- MonotonicAggregate [C035#48], [C035#48 AS C035#50, mmin(C136#49) AS FSAggr_1#51], [1, 0]
+   :  +- LocalRelation [C035#48, C136#49]
+   +- MonotonicAggregate [To#25], [To#25 AS To#55, mmin(C1#54) AS FSAggr_1#56], [1, 0]
+      +- Project [To#25, (Cost34#53 + Cost#26) AS C1#54]
+         +- Join Inner, (G39#52 = From#24)
+            :- AggregateRelation sp, [G39#52, Cost34#53], [1, 0]
+            +- CacheHint
+               +- LogicalRDD [From#24, To#25, Cost#26]
+
+== Physical Plan ==
+*Project [To#55 AS Var_1#57, FSAggr_1#56 AS Var_2#58]
++- AggregateRecursion [To#55,FSAggr_1#56] (Driver) [sp][1,0]
+   :- ExitAggrExchange(key=[C035#48], functions=[mmin(C136#49)], output=[C035#48,mmin#63], iterType=Tungsten) hashpartitioning(C035#48 AS C035#50, 3)
+   :  +- *HashAggregate(keys=[C035#48], functions=[partial_mmin(C136#49)], output=[C035#48, mmin#63])
+   :     +- LocalTableScan [C035#48, C136#49]
+   +- RecAggrExchange(key=[To#25], functions=[mmin(C1#54)], output=[To#55,FSAggr_1#56], iterType=Tungsten) hashpartitioning(To#25 AS To#55, 3)
+      +- *HashAggregate(keys=[To#25], functions=[partial_mmin(C1#54)], output=[To#25, mmin#66])
+         +- *Project [To#25, (Cost34#53 + Cost#26) AS C1#54]
+            +- *CacheBuildSideShuffleHashJoin [G39#52], [From#24], Inner, BuildRight
+               :- *AggregateRelation [G39#52,Cost34#53](sp)
+               +- Exchange hashpartitioning(From#24, 3)
+                  +- Scan ExistingRDD[From#24,To#25,Cost#26]
+
+Recursive Iterations: 125 ms
+[Success - Execution Finished]
+Compile RamSQL: 193 ms
+Execution (Collect): 581 ms
+Total: 821 ms
+Result Size: 5
+
+====== 11/20 15:02:44 tc_ll/arc=arc/codegen=true/partitions=3/joinType=ShuffleHashJoin/fixpointTask=false/output=query/test_out/log=error ======
+
+Load: 1682 ms
+
+RamSQL Parse: 69 ms
+WITH recursive tc (A, B)
+AS  (SELECT A, B FROM arc)
+UNION
+(SELECT tc.A, arc.B FROM tc, arc WHERE tc.B = arc.A)
+SELECT A, B FROM tc
+
+RamSQL Analyze: 111 ms
+RamSQL Optimize: 26 ms
+RamSQL Generate rules of `tc`: 165 ms
+
+RamSQL Analyze: 3 ms
+RamSQL Optimize: 1 ms
+RamSQL Generate rules of outermost query: 5 ms
+
+== Datalog ObjectText ==
+database({arc(A: integer, B: integer)}).
+tc(A0, B1) <- arc(A0, B1).
+tc(G11, B1) <- tc(G11, G10), arc(G10, B1).
+result(A6, B7) <- tc(A6, B7).
+
+== Datalog Query ==
+result(A6, B7).
+== Compiled PCG Tree ==
+
+PCGOrNode(result_ff_ff(A6, B7), #Children: 1, predicateType: DERIVED, isRecursive: No)
+ PCGAndNode(result_ff_ff(A6, B7), rule#: 3, #Children: 1, predicateType: DERIVED)
+  PCGOrNode(tc_ff_ff(A6, B7), #Children: 1, predicateType: DERIVED, isRecursive: Yes)
+   Clique 1
+    Parents: 
+     1) PCGOrNode(tc_ff_ff(G11, G10), #Children: 1, predicateType: DERIVED, isRecursive: Yes)
+     2) PCGOrNode(tc_ff_ff(A6, B7), #Children: 1, predicateType: DERIVED, isRecursive: Yes)
+    Clique Predicates: 
+    1) CliquePredicate(tc_ff, binding: ff, #ExitRules: 1, #RecursiveRules: 1)
+     Exit Rules:
+      PCGAndNode(tc_ff_ff(A0, B1), rule#: 1, #Children: 1, predicateType: DERIVED)
+       PCGOrNode(arc_ff_ff(A0, B1), #Children: 1, predicateType: BASE)
+        arc(A:integer, B:integer)
+     Recursive Rules:
+      PCGAndNode(tc_ff_ff(G11, B1), rule#: 2, #Children: 2, predicateType: DERIVED)
+       PCGOrNode(tc_ff_ff(G11, G10), #Children: 1, predicateType: DERIVED, isRecursive: Yes)
+       PCGOrNode(arc_bf_bf(G10, B1), #Children: 1, predicateType: BASE)
+        arc(A:integer, B:integer)
+   End Clique 1
+== Operator Program ==
+
+0: tc(Var_1, Var_2) <RECURSIVE_CLIQUE>(Recursion: NONLINEAR, Evaluation Type: SemiNaive)
+Exit Rules: 
+ 1: arc(A, B) <BASE_RELATION>
+Recursive Rules: 
+ 1: (G11, B) <PROJECT>
+  2: (0.G10 = 1.A) <JOIN>
+   3: tc(G11, G10) <RECURSIVE_RELATION>
+   3: arc(A, B) <BASE_RELATION>
+
+== Parsed Logical Plan ==
+'SubqueryAlias tc
++- 'Project [unresolvedalias('tc1.G11 AS Var_1#22, None), unresolvedalias('arc2.B AS Var_2#23, None)]
+   +- 'Recursion tc, [Driver], [1, 0]
+      :- 'UnresolvedRelation `arc`
+      +- 'Project ['tc1.G11, 'arc2.B]
+         +- 'Join Inner, ('tc1.G10 = 'arc2.A)
+            :- SubqueryAlias tc1
+            :  +- LinearRecursiveRelation tc, [G11#20, G10#21], [1, 0]
+            +- 'CacheHint
+               +- 'SubqueryAlias arc2
+                  +- 'Project [*]
+                     +- 'UnresolvedRelation `arc`
+
+== Analyzed Logical Plan ==
+Var_1: int, Var_2: int
+SubqueryAlias tc
++- Project [G11#20 AS Var_1#22, B#1 AS Var_2#23]
+   +- Recursion tc, [Driver], [1, 0]
+      :- SubqueryAlias arc
+      :  +- LogicalRDD [A#0, B#1]
+      +- Project [G11#20, B#1]
+         +- Join Inner, (G10#21 = A#0)
+            :- SubqueryAlias tc1
+            :  +- LinearRecursiveRelation tc, [G11#20, G10#21], [1, 0]
+            +- CacheHint
+               +- SubqueryAlias arc2
+                  +- Project [A#0, B#1]
+                     +- SubqueryAlias arc
+                        +- LogicalRDD [A#0, B#1]
+
+== Optimized Logical Plan ==
+Project [G11#20 AS Var_1#22, B#1 AS Var_2#23]
++- Recursion tc, [Driver], [1, 0]
+   :- LogicalRDD [A#0, B#1]
+   +- Project [G11#20, B#1]
+      +- Join Inner, (G10#21 = A#0)
+         :- LinearRecursiveRelation tc, [G11#20, G10#21], [1, 0]
+         +- CacheHint
+            +- Project [A#0, B#1]
+               +- LogicalRDD [A#0, B#1]
+
+== Physical Plan ==
+*Project [G11#20 AS Var_1#22, B#1 AS Var_2#23]
++- Recursion [G11#20,B#1] (Driver) [tc][1,0]
+   :- ExitExchange tc, hashpartitioning(A#0, 3)
+   :  +- Scan ExistingRDD[A#0,B#1]
+   +- RecExchange tc, false, hashpartitioning(G11#20, 3)
+      +- *Project [G11#20, B#1]
+         +- *CacheBuildSideShuffleHashJoin [G10#21], [A#0], Inner, BuildRight
+            :- Exchange hashpartitioning(G10#21, 3)
+            :  +- *LinearRecursiveRelation [G11#20,G10#21](tc)
+            +- Exchange hashpartitioning(A#0, 3)
+               +- *Project [A#0, B#1]
+                  +- Scan ExistingRDD[A#0,B#1]
+
+Recursive Iterations: 124 ms
+[Success - Execution Finished]
+Compile RamSQL: 512 ms
+Execution (Collect): 1109 ms
+Total: 3320 ms
+Result Size: 11
+
+====== 11/20 15:12:31 tc_ll/arc=arc/codegen=true/partitions=3/joinType=ShuffleHashJoin/fixpointTask=false/output=query/test_out/log=error ======
+
+Load: 1770 ms
+
+== Datalog ObjectText ==
+database({arc(A: integer, B: integer)}).
+tc(A,B) <- arc(A,B).
+tc(A,B) <- tc(A,C), arc(C,B).
+
+== Datalog Query ==
+tc(A, B).
+== Compiled PCG Tree ==
+
+PCGOrNode(tc_ff_ff(A, B), #Children: 1, predicateType: DERIVED, isRecursive: Yes)
+ Clique 1
+  Parents: 
+   1) PCGOrNode(tc_ff_ff(A, C), #Children: 1, predicateType: DERIVED, isRecursive: Yes)
+   2) PCGOrNode(tc_ff_ff(A, B), #Children: 1, predicateType: DERIVED, isRecursive: Yes)
+  Clique Predicates: 
+  1) CliquePredicate(tc_ff, binding: ff, #ExitRules: 1, #RecursiveRules: 1)
+   Exit Rules:
+    PCGAndNode(tc_ff_ff(A, B), rule#: 1, #Children: 1, predicateType: DERIVED)
+     PCGOrNode(arc_ff_ff(A, B), #Children: 1, predicateType: BASE)
+      arc(A:integer, B:integer)
+   Recursive Rules:
+    PCGAndNode(tc_ff_ff(A, B), rule#: 2, #Children: 2, predicateType: DERIVED)
+     PCGOrNode(tc_ff_ff(A, C), #Children: 1, predicateType: DERIVED, isRecursive: Yes)
+     PCGOrNode(arc_bf_bf(C, B), #Children: 1, predicateType: BASE)
+      arc(A:integer, B:integer)
+ End Clique 1
+== Operator Program ==
+
+0: tc(Var_1, Var_2) <RECURSIVE_CLIQUE>(Recursion: NONLINEAR, Evaluation Type: SemiNaive)
+Exit Rules: 
+ 1: arc(A, B) <BASE_RELATION>
+Recursive Rules: 
+ 1: (A, B) <PROJECT>
+  2: (0.C = 1.A) <JOIN>
+   3: tc(A, C) <RECURSIVE_RELATION>
+   3: arc(A, B) <BASE_RELATION>
+
+== Parsed Logical Plan ==
+'SubqueryAlias tc
++- 'Project [unresolvedalias('tc1.A AS Var_1#14, None), unresolvedalias('arc2.B AS Var_2#15, None)]
+   +- 'Recursion tc, [Driver], [1, 0]
+      :- 'UnresolvedRelation `arc`
+      +- 'Project ['tc1.A, 'arc2.B]
+         +- 'Join Inner, ('tc1.C = 'arc2.A)
+            :- SubqueryAlias tc1
+            :  +- LinearRecursiveRelation tc, [A#12, C#13], [1, 0]
+            +- 'CacheHint
+               +- 'SubqueryAlias arc2
+                  +- 'Project [*]
+                     +- 'UnresolvedRelation `arc`
+
+== Analyzed Logical Plan ==
+Var_1: int, Var_2: int
+SubqueryAlias tc
++- Project [A#12 AS Var_1#14, B#1 AS Var_2#15]
+   +- Recursion tc, [Driver], [1, 0]
+      :- SubqueryAlias arc
+      :  +- LogicalRDD [A#0, B#1]
+      +- Project [A#12, B#1]
+         +- Join Inner, (C#13 = A#0)
+            :- SubqueryAlias tc1
+            :  +- LinearRecursiveRelation tc, [A#12, C#13], [1, 0]
+            +- CacheHint
+               +- SubqueryAlias arc2
+                  +- Project [A#0, B#1]
+                     +- SubqueryAlias arc
+                        +- LogicalRDD [A#0, B#1]
+
+== Optimized Logical Plan ==
+Project [A#12 AS Var_1#14, B#1 AS Var_2#15]
++- Recursion tc, [Driver], [1, 0]
+   :- LogicalRDD [A#0, B#1]
+   +- Project [A#12, B#1]
+      +- Join Inner, (C#13 = A#0)
+         :- LinearRecursiveRelation tc, [A#12, C#13], [1, 0]
+         +- CacheHint
+            +- Project [A#0, B#1]
+               +- LogicalRDD [A#0, B#1]
+
+== Physical Plan ==
+*Project [A#12 AS Var_1#14, B#1 AS Var_2#15]
++- Recursion [A#12,B#1] (Driver) [tc][1,0]
+   :- ExitExchange tc, hashpartitioning(A#0, 3)
+   :  +- Scan ExistingRDD[A#0,B#1]
+   +- RecExchange tc, false, hashpartitioning(A#12, 3)
+      +- *Project [A#12, B#1]
+         +- *CacheBuildSideShuffleHashJoin [C#13], [A#0], Inner, BuildRight
+            :- Exchange hashpartitioning(C#13, 3)
+            :  +- *LinearRecursiveRelation [A#12,C#13](tc)
+            +- Exchange hashpartitioning(A#0, 3)
+               +- *Project [A#0, B#1]
+                  +- Scan ExistingRDD[A#0,B#1]
+
+Compile Datalog: 329 ms
+Recursive Iterations: 128 ms
+Execution (Collect): 1127 ms
+Total: 3229 ms
+Result Size: 11
+
+====== 11/20 15:12:34 sssp/warc=s1/codegen=true/partitions=3/joinType=ShuffleHashJoin/fixpointTask=false/output=query/test_out/startvertex=1/log=error ======
+
+Load: 34 ms
+
+== Datalog ObjectText ==
+database({warc(From: integer, To: integer, Cost: integer)}).
+sp(To, mmin<C>) <- To=1, C=0.
+sp(To2, mmin<C>) <- sp(To1, C1), warc(To1, To2, C2), C=C1+C2.
+result(To, min<C>) <- sp(To, C).
+
+== Datalog Query ==
+result(T, C).
+== Compiled PCG Tree ==
+
+PCGOrNode(result_ff_ff(T, C), #Children: 1, predicateType: DERIVED, isRecursive: No)
+ PCGAndNode(result_ff_ff(To, Aggr_1), rule#: 3.2, #Children: 1, predicateType: DERIVED)
+  PCGOrNode(aggregate_result_ff_ff(To, min<C>), #Children: 1, predicateType: BUILT_IN, isRecursive: No)
+   PCGAndNode(aggregate_result_ff_ff(To, C), rule#: 3.1, #Children: 1, predicateType: DERIVED)
+    PCGOrNode(sp_ff_ff(To, C), #Children: 1, predicateType: DERIVED, isRecursive: Yes)
+     Clique 1
+      Parents: 
+       1) PCGOrNode(sp_ff_ff(To1, C1), #Children: 1, predicateType: DERIVED, isRecursive: Yes)
+       2) PCGOrNode(fs_aggregate_sp_2_fff_fff(To2, mmin<C>, FSAggr_1), #Children: 1, predicateType: BUILT_IN, isRecursive: Yes)
+       3) PCGOrNode(sp_ff_ff(To, C), #Children: 1, predicateType: DERIVED, isRecursive: Yes)
+      Clique Predicates: 
+      1) CliquePredicate(fs_aggregate_sp_2_fff, binding: fff, #ExitRules: 0, #RecursiveRules: 1)
+       Exit Rules: NONE
+       Recursive Rules:
+        PCGAndNode(fs_aggregate_sp_2_fff_fff(To2, C, nil), rule#: 2.1, #Children: 3, predicateType: DERIVED)
+         PCGOrNode(sp_ff_ff(To1, C1), #Children: 1, predicateType: DERIVED, isRecursive: Yes)
+         PCGOrNode(warc_bff_bff(To1, To2, C2), #Children: 1, predicateType: BASE)
+          warc(From:integer, To:integer, Cost:integer)
+         PCGOrNode(C =_fb_fb +(C1, C2), #Children: 0, predicateType: BUILT_IN, isRecursive: No)
+      2) CliquePredicate(sp_ff, binding: ff, #ExitRules: 1, #RecursiveRules: 1)
+       Exit Rules:
+        PCGAndNode(sp_ff_ff(To, FSAggr_1), rule#: 1.2, #Children: 1, predicateType: DERIVED)
+         PCGOrNode(fs_aggregate_sp_1_fff_fff(To, mmin<C>, FSAggr_1), #Children: 1, predicateType: BUILT_IN, isRecursive: No)
+          PCGAndNode(fs_aggregate_sp_1_fff_fff(To, C, nil), rule#: 1.1, #Children: 2, predicateType: DERIVED)
+           PCGOrNode(To =_fb_fb 1, #Children: 0, predicateType: BUILT_IN, isRecursive: No)
+           PCGOrNode(C =_fb_fb 0, #Children: 0, predicateType: BUILT_IN, isRecursive: No)
+       Recursive Rules:
+        PCGAndNode(sp_ff_ff(To2, FSAggr_1), rule#: 2.2, #Children: 1, predicateType: DERIVED)
+         PCGOrNode(fs_aggregate_sp_2_fff_fff(To2, mmin<C>, FSAggr_1), #Children: 1, predicateType: BUILT_IN, isRecursive: Yes)
+     End Clique 1
+== Operator Program ==
+
+0: (Var_1 as T, min(Var_2) as C) <AGGREGATE>
+ 1: sp(Var_1, Var_2) <RECURSIVE_CLIQUE>(Recursion: NONLINEAR, Evaluation Type: MonotonicSemiNaive)
+ Exit Rules: 
+  2: (To, mmin(C) as FSAggr_1) <AGGREGATE_FS>
+   3: TUPLE(1 as To, 0 as C) <TUPLE>
+ Recursive Rules: 
+  2: (To, mmin(C) as FSAggr_1) <AGGREGATE_FS>
+   3: (To, C1 + Cost as C) <PROJECT>
+    4: (0.To1 = 1.From) <JOIN>
+     5: sp(To1, C1) <RECURSIVE_RELATION>
+     5: warc(From, To, Cost) <BASE_RELATION>
+
+== Parsed Logical Plan ==
+'SubqueryAlias aggregate_result
++- 'Aggregate ['sp.Var_1], [unresolvedalias('sp.Var_1 AS T#41, None), unresolvedalias('min('sp.Var_2) AS C#42, None)]
+   +- 'SubqueryAlias sp
+      +- 'Project [unresolvedalias('To AS Var_1#39, None), unresolvedalias('FSAggr_1 AS Var_2#40, None)]
+         +- 'AggregateRecursion sp, [Driver], [1, 0]
+            :- 'SubqueryAlias fs_aggregate_sp_1
+            :  +- 'MonotonicAggregate ['TUPLE.To], [unresolvedalias('TUPLE.To AS To#32, None), unresolvedalias('mmin('TUPLE.C) AS FSAggr_1#33, None)], [1, 0]
+            :     +- SubqueryAlias TUPLE
+            :        +- LocalRelation [To#30, C#31]
+            +- 'SubqueryAlias fs_aggregate_sp_2
+               +- 'MonotonicAggregate ['warc.To], [unresolvedalias('warc.To AS To#37, None), unresolvedalias('mmin('C1) AS FSAggr_1#38, None)], [1, 0]
+                  +- 'Project ['warc.To, unresolvedalias(('sp1.C1 + 'warc.Cost) AS C1#36, None)]
+                     +- 'Join Inner, ('sp1.To1 = 'warc.From)
+                        :- SubqueryAlias sp1
+                        :  +- AggregateRelation sp, [To1#34, C1#35], [1, 0]
+                        +- 'CacheHint
+                           +- 'UnresolvedRelation `warc`
+
+== Analyzed Logical Plan ==
+T: int, C: int
+SubqueryAlias aggregate_result
++- Aggregate [Var_1#39], [Var_1#39 AS T#41, min(Var_2#40) AS C#42]
+   +- SubqueryAlias sp
+      +- Project [To#37 AS Var_1#39, FSAggr_1#38 AS Var_2#40]
+         +- AggregateRecursion sp, [Driver], [1, 0]
+            :- SubqueryAlias fs_aggregate_sp_1
+            :  +- MonotonicAggregate [To#30], [To#30 AS To#32, mmin(C#31) AS FSAggr_1#33], [1, 0]
+            :     +- SubqueryAlias TUPLE
+            :        +- LocalRelation [To#30, C#31]
+            +- SubqueryAlias fs_aggregate_sp_2
+               +- MonotonicAggregate [To#17], [To#17 AS To#37, mmin(C1#36) AS FSAggr_1#38], [1, 0]
+                  +- Project [To#17, (C1#35 + Cost#18) AS C1#36]
+                     +- Join Inner, (To1#34 = From#16)
+                        :- SubqueryAlias sp1
+                        :  +- AggregateRelation sp, [To1#34, C1#35], [1, 0]
+                        +- CacheHint
+                           +- SubqueryAlias warc
+                              +- LogicalRDD [From#16, To#17, Cost#18]
+
+== Optimized Logical Plan ==
+Aggregate [Var_1#39], [Var_1#39 AS T#41, min(Var_2#40) AS C#42]
++- Project [To#37 AS Var_1#39, FSAggr_1#38 AS Var_2#40]
+   +- AggregateRecursion sp, [Driver], [1, 0]
+      :- MonotonicAggregate [To#30], [To#30 AS To#32, mmin(C#31) AS FSAggr_1#33], [1, 0]
+      :  +- LocalRelation [To#30, C#31]
+      +- MonotonicAggregate [To#17], [To#17 AS To#37, mmin(C1#36) AS FSAggr_1#38], [1, 0]
+         +- Project [To#17, (C1#35 + Cost#18) AS C1#36]
+            +- Join Inner, (To1#34 = From#16)
+               :- AggregateRelation sp, [To1#34, C1#35], [1, 0]
+               +- CacheHint
+                  +- LogicalRDD [From#16, To#17, Cost#18]
+
+== Physical Plan ==
+*HashAggregate(keys=[Var_1#39], functions=[min(Var_2#40)], output=[T#41, C#42])
++- Exchange hashpartitioning(Var_1#39, 3)
+   +- *HashAggregate(keys=[Var_1#39], functions=[partial_min(Var_2#40)], output=[Var_1#39, min#47])
+      +- *Project [To#37 AS Var_1#39, FSAggr_1#38 AS Var_2#40]
+         +- AggregateRecursion [To#37,FSAggr_1#38] (Driver) [sp][1,0]
+            :- ExitAggrExchange(key=[To#30], functions=[mmin(C#31)], output=[To#30,mmin#50], iterType=Tungsten) hashpartitioning(To#30 AS To#32, 3)
+            :  +- *HashAggregate(keys=[To#30], functions=[partial_mmin(C#31)], output=[To#30, mmin#50])
+            :     +- LocalTableScan [To#30, C#31]
+            +- RecAggrExchange(key=[To#17], functions=[mmin(C1#36)], output=[To#37,FSAggr_1#38], iterType=Tungsten) hashpartitioning(To#17 AS To#37, 3)
+               +- *HashAggregate(keys=[To#17], functions=[partial_mmin(C1#36)], output=[To#17, mmin#53])
+                  +- *Project [To#17, (C1#35 + Cost#18) AS C1#36]
+                     +- *CacheBuildSideShuffleHashJoin [To1#34], [From#16], Inner, BuildRight
+                        :- *AggregateRelation [To1#34,C1#35](sp)
+                        +- Exchange hashpartitioning(From#16, 3)
+                           +- Scan ExistingRDD[From#16,To#17,Cost#18]
+
+Compile Datalog: 157 ms
+Recursive Iterations: 155 ms
+Execution (Collect): 643 ms
+Total: 835 ms
+Result Size: 5
+
+====== 11/20 15:14:04 tc_ll/arc=arc/codegen=true/partitions=3/joinType=ShuffleHashJoin/fixpointTask=false/output=query/test_out/log=error ======
+
+Load: 1698 ms
+
+RamSQL Parse: 68 ms
+WITH recursive tc (A, B)
+AS  (SELECT A, B FROM arc)
+UNION
+(SELECT tc.A, arc.B FROM tc, arc WHERE tc.B = arc.A)
+SELECT A, B FROM tc
+
+RamSQL Analyze: 113 ms
+RamSQL Optimize: 27 ms
+RamSQL Generate rules of `tc`: 168 ms
+
+RamSQL Analyze: 2 ms
+RamSQL Optimize: 1 ms
+RamSQL Generate rules of outermost query: 5 ms
+
+== Datalog ObjectText ==
+database({arc(A: integer, B: integer)}).
+tc(A0, B1) <- arc(A0, B1).
+tc(G11, B1) <- tc(G11, G10), arc(G10, B1).
+result(A6, B7) <- tc(A6, B7).
+
+== Datalog Query ==
+result(A6, B7).
+== Compiled PCG Tree ==
+
+PCGOrNode(result_ff_ff(A6, B7), #Children: 1, predicateType: DERIVED, isRecursive: No)
+ PCGAndNode(result_ff_ff(A6, B7), rule#: 3, #Children: 1, predicateType: DERIVED)
+  PCGOrNode(tc_ff_ff(A6, B7), #Children: 1, predicateType: DERIVED, isRecursive: Yes)
+   Clique 1
+    Parents: 
+     1) PCGOrNode(tc_ff_ff(G11, G10), #Children: 1, predicateType: DERIVED, isRecursive: Yes)
+     2) PCGOrNode(tc_ff_ff(A6, B7), #Children: 1, predicateType: DERIVED, isRecursive: Yes)
+    Clique Predicates: 
+    1) CliquePredicate(tc_ff, binding: ff, #ExitRules: 1, #RecursiveRules: 1)
+     Exit Rules:
+      PCGAndNode(tc_ff_ff(A0, B1), rule#: 1, #Children: 1, predicateType: DERIVED)
+       PCGOrNode(arc_ff_ff(A0, B1), #Children: 1, predicateType: BASE)
+        arc(A:integer, B:integer)
+     Recursive Rules:
+      PCGAndNode(tc_ff_ff(G11, B1), rule#: 2, #Children: 2, predicateType: DERIVED)
+       PCGOrNode(tc_ff_ff(G11, G10), #Children: 1, predicateType: DERIVED, isRecursive: Yes)
+       PCGOrNode(arc_bf_bf(G10, B1), #Children: 1, predicateType: BASE)
+        arc(A:integer, B:integer)
+   End Clique 1
+== Operator Program ==
+
+0: tc(Var_1, Var_2) <RECURSIVE_CLIQUE>(Recursion: NONLINEAR, Evaluation Type: SemiNaive)
+Exit Rules: 
+ 1: arc(A, B) <BASE_RELATION>
+Recursive Rules: 
+ 1: (G11, B) <PROJECT>
+  2: (0.G10 = 1.A) <JOIN>
+   3: tc(G11, G10) <RECURSIVE_RELATION>
+   3: arc(A, B) <BASE_RELATION>
+
+== Parsed Logical Plan ==
+'SubqueryAlias tc
++- 'Project [unresolvedalias('tc1.G11 AS Var_1#22, None), unresolvedalias('arc2.B AS Var_2#23, None)]
+   +- 'Recursion tc, [Driver], [1, 0]
+      :- 'UnresolvedRelation `arc`
+      +- 'Project ['tc1.G11, 'arc2.B]
+         +- 'Join Inner, ('tc1.G10 = 'arc2.A)
+            :- SubqueryAlias tc1
+            :  +- LinearRecursiveRelation tc, [G11#20, G10#21], [1, 0]
+            +- 'CacheHint
+               +- 'SubqueryAlias arc2
+                  +- 'Project [*]
+                     +- 'UnresolvedRelation `arc`
+
+== Analyzed Logical Plan ==
+Var_1: int, Var_2: int
+SubqueryAlias tc
++- Project [G11#20 AS Var_1#22, B#1 AS Var_2#23]
+   +- Recursion tc, [Driver], [1, 0]
+      :- SubqueryAlias arc
+      :  +- LogicalRDD [A#0, B#1]
+      +- Project [G11#20, B#1]
+         +- Join Inner, (G10#21 = A#0)
+            :- SubqueryAlias tc1
+            :  +- LinearRecursiveRelation tc, [G11#20, G10#21], [1, 0]
+            +- CacheHint
+               +- SubqueryAlias arc2
+                  +- Project [A#0, B#1]
+                     +- SubqueryAlias arc
+                        +- LogicalRDD [A#0, B#1]
+
+== Optimized Logical Plan ==
+Project [G11#20 AS Var_1#22, B#1 AS Var_2#23]
++- Recursion tc, [Driver], [1, 0]
+   :- LogicalRDD [A#0, B#1]
+   +- Project [G11#20, B#1]
+      +- Join Inner, (G10#21 = A#0)
+         :- LinearRecursiveRelation tc, [G11#20, G10#21], [1, 0]
+         +- CacheHint
+            +- Project [A#0, B#1]
+               +- LogicalRDD [A#0, B#1]
+
+== Physical Plan ==
+*Project [G11#20 AS Var_1#22, B#1 AS Var_2#23]
++- Recursion [G11#20,B#1] (Driver) [tc][1,0]
+   :- ExitExchange tc, hashpartitioning(A#0, 3)
+   :  +- Scan ExistingRDD[A#0,B#1]
+   +- RecExchange tc, false, hashpartitioning(G11#20, 3)
+      +- *Project [G11#20, B#1]
+         +- *CacheBuildSideShuffleHashJoin [G10#21], [A#0], Inner, BuildRight
+            :- Exchange hashpartitioning(G10#21, 3)
+            :  +- *LinearRecursiveRelation [G11#20,G10#21](tc)
+            +- Exchange hashpartitioning(A#0, 3)
+               +- *Project [A#0, B#1]
+                  +- Scan ExistingRDD[A#0,B#1]
+
+Recursive Iterations: 124 ms
+[Success - Execution Finished]
+Compile RamSQL: 519 ms
+Execution (Collect): 1116 ms
+Total: 3351 ms
+Result Size: 11
+
+====== 11/20 15:14:08 sssp/warc=s1/codegen=true/partitions=3/joinType=ShuffleHashJoin/fixpointTask=false/output=query/test_out/startvertex=1/log=error ======
+
+Load: 35 ms
+
+RamSQL Parse: 15 ms
+WITH recursive sp (To, min() AS Cost)
+AS  (SELECT 1, 0)
+UNION
+(SELECT warc.To, sp.Cost + warc.Cost FROM sp, warc
+WHERE sp.To = warc.From)
+SELECT To, Cost FROM sp
+
+RamSQL Analyze: 17 ms
+RamSQL Optimize: 6 ms
+RamSQL Generate rules of `sp`: 26 ms
+
+RamSQL Analyze: 1 ms
+RamSQL Optimize: 1 ms
+RamSQL Generate rules of outermost query: 2 ms
+
+== Datalog ObjectText ==
+database({warc(From: integer, To: integer, Cost: integer)}).
+sp(C035, mmin<C136>) <- C035 = 1, C136 = 0.
+sp(To25, mmin<C137>) <- sp(G39, Cost34), warc(G39, To25, Cost26), C137 = (Cost34 + Cost26).
+result(To33, Cost34) <- sp(To33, Cost34).
+
+== Datalog Query ==
+result(To33, Cost34).
+== Compiled PCG Tree ==
+
+PCGOrNode(result_ff_ff(To33, Cost34), #Children: 1, predicateType: DERIVED, isRecursive: No)
+ PCGAndNode(result_ff_ff(To33, Cost34), rule#: 3, #Children: 1, predicateType: DERIVED)
+  PCGOrNode(sp_ff_ff(To33, Cost34), #Children: 1, predicateType: DERIVED, isRecursive: Yes)
+   Clique 1
+    Parents: 
+     1) PCGOrNode(sp_ff_ff(G39, Cost34), #Children: 1, predicateType: DERIVED, isRecursive: Yes)
+     2) PCGOrNode(fs_aggregate_sp_2_fff_fff(To25, mmin<C137>, FSAggr_1), #Children: 1, predicateType: BUILT_IN, isRecursive: Yes)
+     3) PCGOrNode(sp_ff_ff(To33, Cost34), #Children: 1, predicateType: DERIVED, isRecursive: Yes)
+    Clique Predicates: 
+    1) CliquePredicate(fs_aggregate_sp_2_fff, binding: fff, #ExitRules: 0, #RecursiveRules: 1)
+     Exit Rules: NONE
+     Recursive Rules:
+      PCGAndNode(fs_aggregate_sp_2_fff_fff(To25, C137, nil), rule#: 2.1, #Children: 3, predicateType: DERIVED)
+       PCGOrNode(sp_ff_ff(G39, Cost34), #Children: 1, predicateType: DERIVED, isRecursive: Yes)
+       PCGOrNode(warc_bff_bff(G39, To25, Cost26), #Children: 1, predicateType: BASE)
+        warc(From:integer, To:integer, Cost:integer)
+       PCGOrNode(C137 =_fb_fb +(Cost34, Cost26), #Children: 0, predicateType: BUILT_IN, isRecursive: No)
+    2) CliquePredicate(sp_ff, binding: ff, #ExitRules: 1, #RecursiveRules: 1)
+     Exit Rules:
+      PCGAndNode(sp_ff_ff(C035, FSAggr_1), rule#: 1.2, #Children: 1, predicateType: DERIVED)
+       PCGOrNode(fs_aggregate_sp_1_fff_fff(C035, mmin<C136>, FSAggr_1), #Children: 1, predicateType: BUILT_IN, isRecursive: No)
+        PCGAndNode(fs_aggregate_sp_1_fff_fff(C035, C136, nil), rule#: 1.1, #Children: 2, predicateType: DERIVED)
+         PCGOrNode(C035 =_fb_fb 1, #Children: 0, predicateType: BUILT_IN, isRecursive: No)
+         PCGOrNode(C136 =_fb_fb 0, #Children: 0, predicateType: BUILT_IN, isRecursive: No)
+     Recursive Rules:
+      PCGAndNode(sp_ff_ff(To25, FSAggr_1), rule#: 2.2, #Children: 1, predicateType: DERIVED)
+       PCGOrNode(fs_aggregate_sp_2_fff_fff(To25, mmin<C137>, FSAggr_1), #Children: 1, predicateType: BUILT_IN, isRecursive: Yes)
+   End Clique 1
+== Operator Program ==
+
+0: sp(Var_1, Var_2) <RECURSIVE_CLIQUE>(Recursion: NONLINEAR, Evaluation Type: MonotonicSemiNaive)
+Exit Rules: 
+ 1: (C035, mmin(C136) as FSAggr_1) <AGGREGATE_FS>
+  2: TUPLE(1 as C035, 0 as C136) <TUPLE>
+Recursive Rules: 
+ 1: (To, mmin(C137) as FSAggr_1) <AGGREGATE_FS>
+  2: (To, Cost34 + Cost as C137) <PROJECT>
+   3: (0.G39 = 1.From) <JOIN>
+    4: sp(G39, Cost34) <RECURSIVE_RELATION>
+    4: warc(From, To, Cost) <BASE_RELATION>
+
+== Parsed Logical Plan ==
+'SubqueryAlias sp
++- 'Project [unresolvedalias('To AS Var_1#57, None), unresolvedalias('FSAggr_1 AS Var_2#58, None)]
+   +- 'AggregateRecursion sp, [Driver], [1, 0]
+      :- 'SubqueryAlias fs_aggregate_sp_1
+      :  +- 'MonotonicAggregate ['TUPLE.C035], [unresolvedalias('TUPLE.C035 AS C035#50, None), unresolvedalias('mmin('TUPLE.C136) AS FSAggr_1#51, None)], [1, 0]
+      :     +- SubqueryAlias TUPLE
+      :        +- LocalRelation [C035#48, C136#49]
+      +- 'SubqueryAlias fs_aggregate_sp_2
+         +- 'MonotonicAggregate ['warc.To], [unresolvedalias('warc.To AS To#55, None), unresolvedalias('mmin('C1) AS FSAggr_1#56, None)], [1, 0]
+            +- 'Project ['warc.To, unresolvedalias(('sp1.Cost34 + 'warc.Cost) AS C1#54, None)]
+               +- 'Join Inner, ('sp1.G39 = 'warc.From)
+                  :- SubqueryAlias sp1
+                  :  +- AggregateRelation sp, [G39#52, Cost34#53], [1, 0]
+                  +- 'CacheHint
+                     +- 'UnresolvedRelation `warc`
+
+== Analyzed Logical Plan ==
+Var_1: int, Var_2: int
+SubqueryAlias sp
++- Project [To#55 AS Var_1#57, FSAggr_1#56 AS Var_2#58]
+   +- AggregateRecursion sp, [Driver], [1, 0]
+      :- SubqueryAlias fs_aggregate_sp_1
+      :  +- MonotonicAggregate [C035#48], [C035#48 AS C035#50, mmin(C136#49) AS FSAggr_1#51], [1, 0]
+      :     +- SubqueryAlias TUPLE
+      :        +- LocalRelation [C035#48, C136#49]
+      +- SubqueryAlias fs_aggregate_sp_2
+         +- MonotonicAggregate [To#25], [To#25 AS To#55, mmin(C1#54) AS FSAggr_1#56], [1, 0]
+            +- Project [To#25, (Cost34#53 + Cost#26) AS C1#54]
+               +- Join Inner, (G39#52 = From#24)
+                  :- SubqueryAlias sp1
+                  :  +- AggregateRelation sp, [G39#52, Cost34#53], [1, 0]
+                  +- CacheHint
+                     +- SubqueryAlias warc
+                        +- LogicalRDD [From#24, To#25, Cost#26]
+
+== Optimized Logical Plan ==
+Project [To#55 AS Var_1#57, FSAggr_1#56 AS Var_2#58]
++- AggregateRecursion sp, [Driver], [1, 0]
+   :- MonotonicAggregate [C035#48], [C035#48 AS C035#50, mmin(C136#49) AS FSAggr_1#51], [1, 0]
+   :  +- LocalRelation [C035#48, C136#49]
+   +- MonotonicAggregate [To#25], [To#25 AS To#55, mmin(C1#54) AS FSAggr_1#56], [1, 0]
+      +- Project [To#25, (Cost34#53 + Cost#26) AS C1#54]
+         +- Join Inner, (G39#52 = From#24)
+            :- AggregateRelation sp, [G39#52, Cost34#53], [1, 0]
+            +- CacheHint
+               +- LogicalRDD [From#24, To#25, Cost#26]
+
+== Physical Plan ==
+*Project [To#55 AS Var_1#57, FSAggr_1#56 AS Var_2#58]
++- AggregateRecursion [To#55,FSAggr_1#56] (Driver) [sp][1,0]
+   :- ExitAggrExchange(key=[C035#48], functions=[mmin(C136#49)], output=[C035#48,mmin#63], iterType=Tungsten) hashpartitioning(C035#48 AS C035#50, 3)
+   :  +- *HashAggregate(keys=[C035#48], functions=[partial_mmin(C136#49)], output=[C035#48, mmin#63])
+   :     +- LocalTableScan [C035#48, C136#49]
+   +- RecAggrExchange(key=[To#25], functions=[mmin(C1#54)], output=[To#55,FSAggr_1#56], iterType=Tungsten) hashpartitioning(To#25 AS To#55, 3)
+      +- *HashAggregate(keys=[To#25], functions=[partial_mmin(C1#54)], output=[To#25, mmin#66])
+         +- *Project [To#25, (Cost34#53 + Cost#26) AS C1#54]
+            +- *CacheBuildSideShuffleHashJoin [G39#52], [From#24], Inner, BuildRight
+               :- *AggregateRelation [G39#52,Cost34#53](sp)
+               +- Exchange hashpartitioning(From#24, 3)
+                  +- Scan ExistingRDD[From#24,To#25,Cost#26]
+
+Recursive Iterations: 152 ms
+[Success - Execution Finished]
+Compile RamSQL: 167 ms
+Execution (Collect): 607 ms
+Total: 819 ms
+Result Size: 5
+
+====== 11/21 13:54:27 tc_ll/arc=arc/codegen=true/partitions=3/joinType=ShuffleHashJoin/fixpointTask=false/output=query/test_out/log=error ======
+
+Load: 2213 ms
+
+== Datalog ObjectText ==
+database({arc(A: integer, B: integer)}).
+tc(A,B) <- arc(A,B).
+tc(A,B) <- tc(A,C), arc(C,B).
+
+== Datalog Query ==
+tc(A, B).
+== Compiled PCG Tree ==
+
+PCGOrNode(tc_ff_ff(A, B), #Children: 1, predicateType: DERIVED, isRecursive: Yes)
+ Clique 1
+  Parents: 
+   1) PCGOrNode(tc_ff_ff(A, C), #Children: 1, predicateType: DERIVED, isRecursive: Yes)
+   2) PCGOrNode(tc_ff_ff(A, B), #Children: 1, predicateType: DERIVED, isRecursive: Yes)
+  Clique Predicates: 
+  1) CliquePredicate(tc_ff, binding: ff, #ExitRules: 1, #RecursiveRules: 1)
+   Exit Rules:
+    PCGAndNode(tc_ff_ff(A, B), rule#: 1, #Children: 1, predicateType: DERIVED)
+     PCGOrNode(arc_ff_ff(A, B), #Children: 1, predicateType: BASE)
+      arc(A:integer, B:integer)
+   Recursive Rules:
+    PCGAndNode(tc_ff_ff(A, B), rule#: 2, #Children: 2, predicateType: DERIVED)
+     PCGOrNode(tc_ff_ff(A, C), #Children: 1, predicateType: DERIVED, isRecursive: Yes)
+     PCGOrNode(arc_bf_bf(C, B), #Children: 1, predicateType: BASE)
+      arc(A:integer, B:integer)
+ End Clique 1
+== Operator Program ==
+
+0: tc(Var_1, Var_2) <RECURSIVE_CLIQUE>(Recursion: NONLINEAR, Evaluation Type: SemiNaive)
+Exit Rules: 
+ 1: arc(A, B) <BASE_RELATION>
+Recursive Rules: 
+ 1: (A, B) <PROJECT>
+  2: (0.C = 1.A) <JOIN>
+   3: tc(A, C) <RECURSIVE_RELATION>
+   3: arc(A, B) <BASE_RELATION>
+
+== Parsed Logical Plan ==
+'SubqueryAlias tc
++- 'Project [unresolvedalias('tc1.A AS Var_1#14, None), unresolvedalias('arc2.B AS Var_2#15, None)]
+   +- 'Recursion tc, [Driver], [1, 0]
+      :- 'UnresolvedRelation `arc`
+      +- 'Project ['tc1.A, 'arc2.B]
+         +- 'Join Inner, ('tc1.C = 'arc2.A)
+            :- SubqueryAlias tc1
+            :  +- LinearRecursiveRelation tc, [A#12, C#13], [1, 0]
+            +- 'CacheHint
+               +- 'SubqueryAlias arc2
+                  +- 'Project [*]
+                     +- 'UnresolvedRelation `arc`
+
+== Analyzed Logical Plan ==
+Var_1: int, Var_2: int
+SubqueryAlias tc
++- Project [A#12 AS Var_1#14, B#1 AS Var_2#15]
+   +- Recursion tc, [Driver], [1, 0]
+      :- SubqueryAlias arc
+      :  +- LogicalRDD [A#0, B#1]
+      +- Project [A#12, B#1]
+         +- Join Inner, (C#13 = A#0)
+            :- SubqueryAlias tc1
+            :  +- LinearRecursiveRelation tc, [A#12, C#13], [1, 0]
+            +- CacheHint
+               +- SubqueryAlias arc2
+                  +- Project [A#0, B#1]
+                     +- SubqueryAlias arc
+                        +- LogicalRDD [A#0, B#1]
+
+== Optimized Logical Plan ==
+Project [A#12 AS Var_1#14, B#1 AS Var_2#15]
++- Recursion tc, [Driver], [1, 0]
+   :- LogicalRDD [A#0, B#1]
+   +- Project [A#12, B#1]
+      +- Join Inner, (C#13 = A#0)
+         :- LinearRecursiveRelation tc, [A#12, C#13], [1, 0]
+         +- CacheHint
+            +- Project [A#0, B#1]
+               +- LogicalRDD [A#0, B#1]
+
+== Physical Plan ==
+*Project [A#12 AS Var_1#14, B#1 AS Var_2#15]
++- Recursion [A#12,B#1] (Driver) [tc][1,0]
+   :- ExitExchange tc, hashpartitioning(A#0, 3)
+   :  +- Scan ExistingRDD[A#0,B#1]
+   +- RecExchange tc, false, hashpartitioning(A#12, 3)
+      +- *Project [A#12, B#1]
+         +- *CacheBuildSideShuffleHashJoin [C#13], [A#0], Inner, BuildRight
+            :- Exchange hashpartitioning(C#13, 3)
+            :  +- *LinearRecursiveRelation [A#12,C#13](tc)
+            +- Exchange hashpartitioning(A#0, 3)
+               +- *Project [A#0, B#1]
+                  +- Scan ExistingRDD[A#0,B#1]
+
+Compile Datalog: 424 ms
+Recursive Iterations: 150 ms
+Execution (Collect): 1376 ms
+Total: 4015 ms
+Result Size: 11
+
+====== 11/21 13:54:31 reach/rc=rc1/codegen=true/partitions=3/joinType=ShuffleHashJoin/fixpointTask=false/output=query/test_out/startvertex=1/log=error ======
+
+Load: 35 ms
+
+== Datalog ObjectText ==
+database({rc(A: integer, B: integer)}).
+reach(B) <- B=1.
+reach(B) <- reach(A), rc(A,B).
+
+== Datalog Query ==
+reach(B).
+== Compiled PCG Tree ==
+
+PCGOrNode(reach_f_f(B), #Children: 1, predicateType: DERIVED, isRecursive: Yes)
+ Clique 1
+  Parents: 
+   1) PCGOrNode(reach_f_f(A), #Children: 1, predicateType: DERIVED, isRecursive: Yes)
+   2) PCGOrNode(reach_f_f(B), #Children: 1, predicateType: DERIVED, isRecursive: Yes)
+  Clique Predicates: 
+  1) CliquePredicate(reach_f, binding: f, #ExitRules: 1, #RecursiveRules: 1)
+   Exit Rules:
+    PCGAndNode(reach_f_f(B), rule#: 1, #Children: 1, predicateType: DERIVED)
+     PCGOrNode(B =_fb_fb 1, #Children: 0, predicateType: BUILT_IN, isRecursive: No)
+   Recursive Rules:
+    PCGAndNode(reach_f_f(B), rule#: 2, #Children: 2, predicateType: DERIVED)
+     PCGOrNode(reach_f_f(A), #Children: 1, predicateType: DERIVED, isRecursive: Yes)
+     PCGOrNode(rc_bf_bf(A, B), #Children: 1, predicateType: BASE)
+      rc(A:integer, B:integer)
+ End Clique 1
+== Operator Program ==
+
+0: reach(Var_1) <RECURSIVE_CLIQUE>(Recursion: NONLINEAR, Evaluation Type: SemiNaive)
+Exit Rules: 
+ 1: B = 1 <ASSIGNMENT>
+Recursive Rules: 
+ 1: (B) <PROJECT>
+  2: (0.A = 1.A) <JOIN>
+   3: reach(A) <RECURSIVE_RELATION>
+   3: rc(A, B) <BASE_RELATION>
+
+== Parsed Logical Plan ==
+'SubqueryAlias reach
++- 'Project [unresolvedalias('rc.B AS Var_1#28, None)]
+   +- 'Recursion reach, [Driver], [1]
+      :- LocalRelation [B#26]
+      +- 'Project ['rc.B]
+         +- 'Join Inner, ('reach1.A = 'rc.A)
+            :- SubqueryAlias reach1
+            :  +- LinearRecursiveRelation reach, [A#27], [1]
+            +- 'CacheHint
+               +- 'UnresolvedRelation `rc`
+
+== Analyzed Logical Plan ==
+Var_1: int
+SubqueryAlias reach
++- Project [B#17 AS Var_1#28]
+   +- Recursion reach, [Driver], [1]
+      :- LocalRelation [B#26]
+      +- Project [B#17]
+         +- Join Inner, (A#27 = A#16)
+            :- SubqueryAlias reach1
+            :  +- LinearRecursiveRelation reach, [A#27], [1]
+            +- CacheHint
+               +- SubqueryAlias rc
+                  +- LogicalRDD [A#16, B#17]
+
+== Optimized Logical Plan ==
+Project [B#17 AS Var_1#28]
++- Recursion reach, [Driver], [1]
+   :- LocalRelation [B#26]
+   +- Project [B#17]
+      +- Join Inner, (A#27 = A#16)
+         :- LinearRecursiveRelation reach, [A#27], [1]
+         +- CacheHint
+            +- LogicalRDD [A#16, B#17]
+
+== Physical Plan ==
+*Project [B#17 AS Var_1#28]
++- Recursion [B#17] (Driver) [reach][1]
+   :- ExitExchange reach, hashpartitioning(B#26, 3)
+   :  +- LocalTableScan [B#26]
+   +- RecExchange reach, false, hashpartitioning(B#17, 3)
+      +- *Project [B#17]
+         +- *CacheBuildSideShuffleHashJoin [A#27], [A#16], Inner, BuildRight
+            :- *LinearRecursiveRelation [A#27](reach)
+            +- Exchange hashpartitioning(A#16, 3)
+               +- Scan ExistingRDD[A#16,B#17]
+
+Compile Datalog: 51 ms
+Recursive Iterations: 62 ms
+Execution (Collect): 250 ms
+Total: 336 ms
+Result Size: 5
+
+====== 11/21 13:54:51 tc_ll/arc=arc/codegen=true/partitions=3/joinType=ShuffleHashJoin/fixpointTask=false/output=query/test_out/log=error ======
+
+Load: 1689 ms
+
+RamSQL Parse: 69 ms
+WITH recursive tc (A, B)
+AS  (SELECT A, B FROM arc)
+UNION
+(SELECT tc.A, arc.B FROM tc, arc WHERE tc.B = arc.A)
+SELECT A, B FROM tc
+
+RamSQL Analyze: 112 ms
+RamSQL Optimize: 27 ms
+RamSQL Generate rules of `tc`: 166 ms
+
+RamSQL Analyze: 3 ms
+RamSQL Optimize: 0 ms
+RamSQL Generate rules of outermost query: 5 ms
+
+== Datalog ObjectText ==
+database({arc(A: integer, B: integer)}).
+tc(A0, B1) <- arc(A0, B1).
+tc(G11, B1) <- tc(G11, G10), arc(G10, B1).
+result(A6, B7) <- tc(A6, B7).
+
+== Datalog Query ==
+result(A6, B7).
+== Compiled PCG Tree ==
+
+PCGOrNode(result_ff_ff(A6, B7), #Children: 1, predicateType: DERIVED, isRecursive: No)
+ PCGAndNode(result_ff_ff(A6, B7), rule#: 3, #Children: 1, predicateType: DERIVED)
+  PCGOrNode(tc_ff_ff(A6, B7), #Children: 1, predicateType: DERIVED, isRecursive: Yes)
+   Clique 1
+    Parents: 
+     1) PCGOrNode(tc_ff_ff(G11, G10), #Children: 1, predicateType: DERIVED, isRecursive: Yes)
+     2) PCGOrNode(tc_ff_ff(A6, B7), #Children: 1, predicateType: DERIVED, isRecursive: Yes)
+    Clique Predicates: 
+    1) CliquePredicate(tc_ff, binding: ff, #ExitRules: 1, #RecursiveRules: 1)
+     Exit Rules:
+      PCGAndNode(tc_ff_ff(A0, B1), rule#: 1, #Children: 1, predicateType: DERIVED)
+       PCGOrNode(arc_ff_ff(A0, B1), #Children: 1, predicateType: BASE)
+        arc(A:integer, B:integer)
+     Recursive Rules:
+      PCGAndNode(tc_ff_ff(G11, B1), rule#: 2, #Children: 2, predicateType: DERIVED)
+       PCGOrNode(tc_ff_ff(G11, G10), #Children: 1, predicateType: DERIVED, isRecursive: Yes)
+       PCGOrNode(arc_bf_bf(G10, B1), #Children: 1, predicateType: BASE)
+        arc(A:integer, B:integer)
+   End Clique 1
+== Operator Program ==
+
+0: tc(Var_1, Var_2) <RECURSIVE_CLIQUE>(Recursion: NONLINEAR, Evaluation Type: SemiNaive)
+Exit Rules: 
+ 1: arc(A, B) <BASE_RELATION>
+Recursive Rules: 
+ 1: (G11, B) <PROJECT>
+  2: (0.G10 = 1.A) <JOIN>
+   3: tc(G11, G10) <RECURSIVE_RELATION>
+   3: arc(A, B) <BASE_RELATION>
+
+== Parsed Logical Plan ==
+'SubqueryAlias tc
++- 'Project [unresolvedalias('tc1.G11 AS Var_1#22, None), unresolvedalias('arc2.B AS Var_2#23, None)]
+   +- 'Recursion tc, [Driver], [1, 0]
+      :- 'UnresolvedRelation `arc`
+      +- 'Project ['tc1.G11, 'arc2.B]
+         +- 'Join Inner, ('tc1.G10 = 'arc2.A)
+            :- SubqueryAlias tc1
+            :  +- LinearRecursiveRelation tc, [G11#20, G10#21], [1, 0]
+            +- 'CacheHint
+               +- 'SubqueryAlias arc2
+                  +- 'Project [*]
+                     +- 'UnresolvedRelation `arc`
+
+== Analyzed Logical Plan ==
+Var_1: int, Var_2: int
+SubqueryAlias tc
++- Project [G11#20 AS Var_1#22, B#1 AS Var_2#23]
+   +- Recursion tc, [Driver], [1, 0]
+      :- SubqueryAlias arc
+      :  +- LogicalRDD [A#0, B#1]
+      +- Project [G11#20, B#1]
+         +- Join Inner, (G10#21 = A#0)
+            :- SubqueryAlias tc1
+            :  +- LinearRecursiveRelation tc, [G11#20, G10#21], [1, 0]
+            +- CacheHint
+               +- SubqueryAlias arc2
+                  +- Project [A#0, B#1]
+                     +- SubqueryAlias arc
+                        +- LogicalRDD [A#0, B#1]
+
+== Optimized Logical Plan ==
+Project [G11#20 AS Var_1#22, B#1 AS Var_2#23]
++- Recursion tc, [Driver], [1, 0]
+   :- LogicalRDD [A#0, B#1]
+   +- Project [G11#20, B#1]
+      +- Join Inner, (G10#21 = A#0)
+         :- LinearRecursiveRelation tc, [G11#20, G10#21], [1, 0]
+         +- CacheHint
+            +- Project [A#0, B#1]
+               +- LogicalRDD [A#0, B#1]
+
+== Physical Plan ==
+*Project [G11#20 AS Var_1#22, B#1 AS Var_2#23]
++- Recursion [G11#20,B#1] (Driver) [tc][1,0]
+   :- ExitExchange tc, hashpartitioning(A#0, 3)
+   :  +- Scan ExistingRDD[A#0,B#1]
+   +- RecExchange tc, false, hashpartitioning(G11#20, 3)
+      +- *Project [G11#20, B#1]
+         +- *CacheBuildSideShuffleHashJoin [G10#21], [A#0], Inner, BuildRight
+            :- Exchange hashpartitioning(G10#21, 3)
+            :  +- *LinearRecursiveRelation [G11#20,G10#21](tc)
+            +- Exchange hashpartitioning(A#0, 3)
+               +- *Project [A#0, B#1]
+                  +- Scan ExistingRDD[A#0,B#1]
+
+Recursive Iterations: 129 ms
+[Success - Execution Finished]
+Compile RamSQL: 514 ms
+Execution (Collect): 1099 ms
+Total: 3319 ms
+Result Size: 11
+
+====== 11/21 13:54:55 reach/rc=rc1/codegen=true/partitions=3/joinType=ShuffleHashJoin/fixpointTask=false/output=query/test_out/startvertex=1/log=error ======
+
+Load: 37 ms
+
+RamSQL Parse: 6 ms
+WITH recursive reach (Node)
+AS  (SELECT 1)
+UNION
+(SELECT rc.B FROM reach, rc
+WHERE reach.Node = rc.A)
+SELECT Node FROM reach
+
+RamSQL Analyze: 8 ms
+RamSQL Optimize: 4 ms
+RamSQL Generate rules of `reach`: 14 ms
+
+RamSQL Analyze: 1 ms
+RamSQL Optimize: 0 ms
+RamSQL Generate rules of outermost query: 1 ms
+
+== Datalog ObjectText ==
+database({rc(A: integer, B: integer)}).
+reach(C031) <- C031 = 1.
+reach(B25) <- reach(G33), rc(G33, B25).
+result(Node30) <- reach(Node30).
+
+== Datalog Query ==
+result(Node30).
+== Compiled PCG Tree ==
+
+PCGOrNode(result_f_f(Node30), #Children: 1, predicateType: DERIVED, isRecursive: No)
+ PCGAndNode(result_f_f(Node30), rule#: 3, #Children: 1, predicateType: DERIVED)
+  PCGOrNode(reach_f_f(Node30), #Children: 1, predicateType: DERIVED, isRecursive: Yes)
+   Clique 1
+    Parents: 
+     1) PCGOrNode(reach_f_f(G33), #Children: 1, predicateType: DERIVED, isRecursive: Yes)
+     2) PCGOrNode(reach_f_f(Node30), #Children: 1, predicateType: DERIVED, isRecursive: Yes)
+    Clique Predicates: 
+    1) CliquePredicate(reach_f, binding: f, #ExitRules: 1, #RecursiveRules: 1)
+     Exit Rules:
+      PCGAndNode(reach_f_f(C031), rule#: 1, #Children: 1, predicateType: DERIVED)
+       PCGOrNode(C031 =_fb_fb 1, #Children: 0, predicateType: BUILT_IN, isRecursive: No)
+     Recursive Rules:
+      PCGAndNode(reach_f_f(B25), rule#: 2, #Children: 2, predicateType: DERIVED)
+       PCGOrNode(reach_f_f(G33), #Children: 1, predicateType: DERIVED, isRecursive: Yes)
+       PCGOrNode(rc_bf_bf(G33, B25), #Children: 1, predicateType: BASE)
+        rc(A:integer, B:integer)
+   End Clique 1
+== Operator Program ==
+
+0: reach(Var_1) <RECURSIVE_CLIQUE>(Recursion: NONLINEAR, Evaluation Type: SemiNaive)
+Exit Rules: 
+ 1: C031 = 1 <ASSIGNMENT>
+Recursive Rules: 
+ 1: (B) <PROJECT>
+  2: (0.G33 = 1.A) <JOIN>
+   3: reach(G33) <RECURSIVE_RELATION>
+   3: rc(A, B) <BASE_RELATION>
+
+== Parsed Logical Plan ==
+'SubqueryAlias reach
++- 'Project [unresolvedalias('rc.B AS Var_1#42, None)]
+   +- 'Recursion reach, [Driver], [1]
+      :- LocalRelation [C031#40]
+      +- 'Project ['rc.B]
+         +- 'Join Inner, ('reach1.G33 = 'rc.A)
+            :- SubqueryAlias reach1
+            :  +- LinearRecursiveRelation reach, [G33#41], [1]
+            +- 'CacheHint
+               +- 'UnresolvedRelation `rc`
+
+== Analyzed Logical Plan ==
+Var_1: int
+SubqueryAlias reach
++- Project [B#25 AS Var_1#42]
+   +- Recursion reach, [Driver], [1]
+      :- LocalRelation [C031#40]
+      +- Project [B#25]
+         +- Join Inner, (G33#41 = A#24)
+            :- SubqueryAlias reach1
+            :  +- LinearRecursiveRelation reach, [G33#41], [1]
+            +- CacheHint
+               +- SubqueryAlias rc
+                  +- LogicalRDD [A#24, B#25]
+
+== Optimized Logical Plan ==
+Project [B#25 AS Var_1#42]
++- Recursion reach, [Driver], [1]
+   :- LocalRelation [C031#40]
+   +- Project [B#25]
+      +- Join Inner, (G33#41 = A#24)
+         :- LinearRecursiveRelation reach, [G33#41], [1]
+         +- CacheHint
+            +- LogicalRDD [A#24, B#25]
+
+== Physical Plan ==
+*Project [B#25 AS Var_1#42]
++- Recursion [B#25] (Driver) [reach][1]
+   :- ExitExchange reach, hashpartitioning(C031#40, 3)
+   :  +- LocalTableScan [C031#40]
+   +- RecExchange reach, false, hashpartitioning(B#25, 3)
+      +- *Project [B#25]
+         +- *CacheBuildSideShuffleHashJoin [G33#41], [A#24], Inner, BuildRight
+            :- *LinearRecursiveRelation [G33#41](reach)
+            +- Exchange hashpartitioning(A#24, 3)
+               +- Scan ExistingRDD[A#24,B#25]
+
+Recursive Iterations: 58 ms
+[Success - Execution Finished]
+Compile RamSQL: 71 ms
+Execution (Collect): 241 ms
+Total: 353 ms
+Result Size: 5
+
+====== 11/21 13:55:20 tc_ll/arc=arc/codegen=true/partitions=3/joinType=ShuffleHashJoin/fixpointTask=false/output=query/test_out/log=error ======
+
+Load: 1680 ms
+
+== Datalog ObjectText ==
+database({arc(A: integer, B: integer)}).
+tc(A,B) <- arc(A,B).
+tc(A,B) <- tc(A,C), arc(C,B).
+
+== Datalog Query ==
+tc(A, B).
+== Compiled PCG Tree ==
+
+PCGOrNode(tc_ff_ff(A, B), #Children: 1, predicateType: DERIVED, isRecursive: Yes)
+ Clique 1
+  Parents: 
+   1) PCGOrNode(tc_ff_ff(A, C), #Children: 1, predicateType: DERIVED, isRecursive: Yes)
+   2) PCGOrNode(tc_ff_ff(A, B), #Children: 1, predicateType: DERIVED, isRecursive: Yes)
+  Clique Predicates: 
+  1) CliquePredicate(tc_ff, binding: ff, #ExitRules: 1, #RecursiveRules: 1)
+   Exit Rules:
+    PCGAndNode(tc_ff_ff(A, B), rule#: 1, #Children: 1, predicateType: DERIVED)
+     PCGOrNode(arc_ff_ff(A, B), #Children: 1, predicateType: BASE)
+      arc(A:integer, B:integer)
+   Recursive Rules:
+    PCGAndNode(tc_ff_ff(A, B), rule#: 2, #Children: 2, predicateType: DERIVED)
+     PCGOrNode(tc_ff_ff(A, C), #Children: 1, predicateType: DERIVED, isRecursive: Yes)
+     PCGOrNode(arc_bf_bf(C, B), #Children: 1, predicateType: BASE)
+      arc(A:integer, B:integer)
+ End Clique 1
+== Operator Program ==
+
+0: tc(Var_1, Var_2) <RECURSIVE_CLIQUE>(Recursion: NONLINEAR, Evaluation Type: SemiNaive)
+Exit Rules: 
+ 1: arc(A, B) <BASE_RELATION>
+Recursive Rules: 
+ 1: (A, B) <PROJECT>
+  2: (0.C = 1.A) <JOIN>
+   3: tc(A, C) <RECURSIVE_RELATION>
+   3: arc(A, B) <BASE_RELATION>
+
+== Parsed Logical Plan ==
+'SubqueryAlias tc
++- 'Project [unresolvedalias('tc1.A AS Var_1#14, None), unresolvedalias('arc2.B AS Var_2#15, None)]
+   +- 'Recursion tc, [Driver], [1, 0]
+      :- 'UnresolvedRelation `arc`
+      +- 'Project ['tc1.A, 'arc2.B]
+         +- 'Join Inner, ('tc1.C = 'arc2.A)
+            :- SubqueryAlias tc1
+            :  +- LinearRecursiveRelation tc, [A#12, C#13], [1, 0]
+            +- 'CacheHint
+               +- 'SubqueryAlias arc2
+                  +- 'Project [*]
+                     +- 'UnresolvedRelation `arc`
+
+== Analyzed Logical Plan ==
+Var_1: int, Var_2: int
+SubqueryAlias tc
++- Project [A#12 AS Var_1#14, B#1 AS Var_2#15]
+   +- Recursion tc, [Driver], [1, 0]
+      :- SubqueryAlias arc
+      :  +- LogicalRDD [A#0, B#1]
+      +- Project [A#12, B#1]
+         +- Join Inner, (C#13 = A#0)
+            :- SubqueryAlias tc1
+            :  +- LinearRecursiveRelation tc, [A#12, C#13], [1, 0]
+            +- CacheHint
+               +- SubqueryAlias arc2
+                  +- Project [A#0, B#1]
+                     +- SubqueryAlias arc
+                        +- LogicalRDD [A#0, B#1]
+
+== Optimized Logical Plan ==
+Project [A#12 AS Var_1#14, B#1 AS Var_2#15]
++- Recursion tc, [Driver], [1, 0]
+   :- LogicalRDD [A#0, B#1]
+   +- Project [A#12, B#1]
+      +- Join Inner, (C#13 = A#0)
+         :- LinearRecursiveRelation tc, [A#12, C#13], [1, 0]
+         +- CacheHint
+            +- Project [A#0, B#1]
+               +- LogicalRDD [A#0, B#1]
+
+== Physical Plan ==
+*Project [A#12 AS Var_1#14, B#1 AS Var_2#15]
++- Recursion [A#12,B#1] (Driver) [tc][1,0]
+   :- ExitExchange tc, hashpartitioning(A#0, 3)
+   :  +- Scan ExistingRDD[A#0,B#1]
+   +- RecExchange tc, false, hashpartitioning(A#12, 3)
+      +- *Project [A#12, B#1]
+         +- *CacheBuildSideShuffleHashJoin [C#13], [A#0], Inner, BuildRight
+            :- Exchange hashpartitioning(C#13, 3)
+            :  +- *LinearRecursiveRelation [A#12,C#13](tc)
+            +- Exchange hashpartitioning(A#0, 3)
+               +- *Project [A#0, B#1]
+                  +- Scan ExistingRDD[A#0,B#1]
+
+Compile Datalog: 302 ms
+Recursive Iterations: 151 ms
+Execution (Collect): 1183 ms
+Total: 3167 ms
+Result Size: 11
+
+====== 12/12 19:28:48 test/ar=ar/codegen=true/partitions=3/joinType=ShuffleHashJoin/fixpointTask=false/output=query/test_out/log=error ======
+
+====== 12/12 19:29:23 test/ar=ar/codegen=true/partitions=3/joinType=ShuffleHashJoin/fixpointTask=false/output=query/test_out/log=error ======
+
+====== 12/12 19:31:18 test/ar=ar/codegen=true/partitions=3/joinType=ShuffleHashJoin/fixpointTask=false/output=query/test_out/log=error ======
+
+Load: 7717 ms
+
+====== 12/12 19:33:12 test/ar=ar/codegen=true/partitions=3/joinType=ShuffleHashJoin/fixpointTask=false/output=query/test_out/log=error ======
+
+Load: 4281 ms
+
+====== 12/12 19:33:59 test/ar=ar/codegen=true/partitions=3/joinType=ShuffleHashJoin/fixpointTask=false/output=query/test_out/log=error ======
+
+Load: 3143 ms
+Compile RamSQL: 0 ms
+Execution (Collect): 0 ms
+Total: 3146 ms
+Result Size: 0
+
+====== 12/12 19:37:07 tc_ll/arc=arc/codegen=true/partitions=3/joinType=ShuffleHashJoin/fixpointTask=false/output=query/test_out/log=error ======
+
+Load: 7322 ms
+
+RamSQL Parse: 99 ms
+select * from arc
+
+== Parsed Logical Plan ==
+'Project [*]
++- 'UnresolvedRelation `arc`
+
+== Analyzed Logical Plan ==
+ID: int, A: int, B: int, L: string
+Project [ID#0, A#1, B#2, L#3]
++- SubqueryAlias arc
+   +- LogicalRDD [ID#0, A#1, B#2, L#3]
+
+== Optimized Logical Plan ==
+Project [ID#0, A#1, B#2, L#3]
++- LogicalRDD [ID#0, A#1, B#2, L#3]
+
+== Physical Plan ==
+*Project [ID#0, A#1, B#2, L#3]
++- Scan ExistingRDD[ID#0,A#1,B#2,L#3]
+
+[Success - Execution Finished]
+Compile RamSQL: 280 ms
+Execution (Collect): 2823 ms
+Total: 10483 ms
+Result Size: 6
+
+====== 12/12 19:48:20 tc_ll/arc=arc/rc=rc1/codegen=true/partitions=3/joinType=ShuffleHashJoin/fixpointTask=false/output=query/test_out/startvertex=1/log=error ======
+
+Load: 8065 ms
+
+RamSQL Parse: 191 ms
+select rc.ID, arc.ID, (A-C)*(A-C) + (B-D)*(B-D) AS distance, L
+from arc, rc1
+order by distance
+
+====== 12/12 19:55:06 tc_ll/arc=arc/rc=rc1/codegen=true/partitions=3/joinType=ShuffleHashJoin/fixpointTask=false/output=query/test_out/startvertex=1/log=error ======
+
+Load: 7460 ms
+
+RamSQL Parse: 330 ms
+select rc.ID, arc.ID, (A-C)*(A-C) + (B-D)*(B-D) AS distance, L
+from arc, rc1
+order by distance
+
+====== 12/12 19:56:38 tc_ll/rc=rc1/codegen=true/partitions=3/joinType=ShuffleHashJoin/fixpointTask=false/output=query/test_out/startvertex=1/log=error ======
+
+Load: 3837 ms
+Compile RamSQL: 0 ms
+Execution (Collect): 0 ms
+Total: 3840 ms
+Result Size: 0
+
+====== 12/12 19:57:08 tc_ll/rc=rc1/codegen=true/partitions=3/joinType=ShuffleHashJoin/fixpointTask=false/output=query/test_out/startvertex=1/log=error ======
+
+Load: 3092 ms
+
+RamSQL Parse: 249 ms
+select * from re
+
+====== 12/12 19:57:18 tc_ll/rc=rc1/codegen=true/partitions=3/joinType=ShuffleHashJoin/fixpointTask=false/output=query/test_out/startvertex=1/log=error ======
+
+Load: 2751 ms
+
+RamSQL Parse: 66 ms
+select * from rc
+
+== Parsed Logical Plan ==
+'Project [*]
++- 'UnresolvedRelation `rc`
+
+== Analyzed Logical Plan ==
+ID: int, C: int, D: int
+Project [ID#0, C#1, D#2]
++- SubqueryAlias rc
+   +- LogicalRDD [ID#0, C#1, D#2]
+
+== Optimized Logical Plan ==
+Project [ID#0, C#1, D#2]
++- LogicalRDD [ID#0, C#1, D#2]
+
+== Physical Plan ==
+*Project [ID#0, C#1, D#2]
++- Scan ExistingRDD[ID#0,C#1,D#2]
+
+[Success - Execution Finished]
+Compile RamSQL: 238 ms
+Execution (Collect): 2571 ms
+Total: 5607 ms
+Result Size: 2
+
+====== 12/12 20:04:34 tc_ll/arc=arc/rc=rc1/codegen=true/partitions=3/joinType=ShuffleHashJoin/fixpointTask=false/output=query/test_out/startvertex=1/log=error ======
+
+Load: 7639 ms
+
+RamSQL Parse: 119 ms
+select * from rc
+
+== Parsed Logical Plan ==
+'Project [*]
++- 'UnresolvedRelation `rc`
+
+== Analyzed Logical Plan ==
+ID: int, C: int, D: int
+Project [ID#10, C#11, D#12]
++- SubqueryAlias rc
+   +- LogicalRDD [ID#10, C#11, D#12]
+
+== Optimized Logical Plan ==
+Project [ID#10, C#11, D#12]
++- LogicalRDD [ID#10, C#11, D#12]
+
+== Physical Plan ==
+*Project [ID#10, C#11, D#12]
++- Scan ExistingRDD[ID#10,C#11,D#12]
+
+[Success - Execution Finished]
+Compile RamSQL: 343 ms
+Execution (Collect): 2612 ms
+Total: 10654 ms
+Result Size: 2
+
+====== 12/12 20:05:44 tc_ll/arc=arc/rc=rc1/codegen=true/partitions=3/joinType=ShuffleHashJoin/fixpointTask=false/output=query/test_out/startvertex=1/log=error ======
+
+Load: 3198 ms
+
+RamSQL Parse: 113 ms
+select * from rc
+
+== Parsed Logical Plan ==
+'Project [*]
++- 'UnresolvedRelation `rc`
+
+== Analyzed Logical Plan ==
+ID: int, C: int, D: int
+Project [ID#10, C#11, D#12]
++- SubqueryAlias rc
+   +- LogicalRDD [ID#10, C#11, D#12]
+
+== Optimized Logical Plan ==
+Project [ID#10, C#11, D#12]
++- LogicalRDD [ID#10, C#11, D#12]
+
+== Physical Plan ==
+*Project [ID#10, C#11, D#12]
++- Scan ExistingRDD[ID#10,C#11,D#12]
+
+[Success - Execution Finished]
+Compile RamSQL: 184 ms
+Execution (Collect): 1338 ms
+Total: 4745 ms
+Result Size: 2
+
+====== 12/12 20:07:38 tc_ll/arc=arc/rc=rc1/codegen=true/partitions=3/joinType=ShuffleHashJoin/fixpointTask=false/output=query/test_out/startvertex=1/log=error ======
+
+Load: 2704 ms
+
+RamSQL Parse: 113 ms
+select rc.ID, arc.ID, (A-C)*(A-C) + (B-D)*(B-D) AS distance, L
+from arc, rc1
+order by distance
+
+====== 12/12 20:08:32 tc_ll/arc=arc/rc=rc1/codegen=true/partitions=3/joinType=ShuffleHashJoin/fixpointTask=false/output=query/test_out/startvertex=1/log=error ======
+
+Load: 3195 ms
+
+RamSQL Parse: 152 ms
+select rc.ID, arc.ID, (A-C)*(A-C) + (B-D)*(B-D) AS distance, L
+from arc, rc
+order by distance
+
+== Parsed Logical Plan ==
+'Sort ['distance ASC], true
++- 'Project ['rc.ID, 'arc.ID, ((('A - 'C) * ('A - 'C)) + (('B - 'D) * ('B - 'D))) AS distance#18, 'L]
+   +- 'Join Inner
+      :- 'UnresolvedRelation `arc`
+      +- 'UnresolvedRelation `rc`
+
+== Analyzed Logical Plan ==
+ID: int, ID: int, distance: int, L: string
+Sort [distance#18 ASC], true
++- Project [ID#10, ID#0, (((A#1 - C#11) * (A#1 - C#11)) + ((B#2 - D#12) * (B#2 - D#12))) AS distance#18, L#3]
+   +- Join Inner
+      :- SubqueryAlias arc
+      :  +- LogicalRDD [ID#0, A#1, B#2, L#3]
+      +- SubqueryAlias rc
+         +- LogicalRDD [ID#10, C#11, D#12]
+
+== Optimized Logical Plan ==
+Sort [distance#18 ASC], true
++- Project [ID#10, ID#0, (((A#1 - C#11) * (A#1 - C#11)) + ((B#2 - D#12) * (B#2 - D#12))) AS distance#18, L#3]
+   +- Join Inner
+      :- LogicalRDD [ID#0, A#1, B#2, L#3]
+      +- LogicalRDD [ID#10, C#11, D#12]
+
+== Physical Plan ==
+*Sort [distance#18 ASC], true, 0
++- Exchange rangepartitioning(distance#18 ASC, 3)
+   +- *Project [ID#10, ID#0, (((A#1 - C#11) * (A#1 - C#11)) + ((B#2 - D#12) * (B#2 - D#12))) AS distance#18, L#3]
+      +- CartesianProduct
+         :- Scan ExistingRDD[ID#0,A#1,B#2,L#3]
+         +- Scan ExistingRDD[ID#10,C#11,D#12]
+
+[Success - Execution Finished]
+Compile RamSQL: 508 ms
+Execution (Collect): 3396 ms
+Total: 7172 ms
+Result Size: 12
+
+====== 12/12 20:12:03 tc_ll/arc=arc/rc=rc1/codegen=true/partitions=3/joinType=ShuffleHashJoin/fixpointTask=false/output=query/test_out/startvertex=1/log=error ======
+
+Load: 2805 ms
+
+RamSQL Parse: 124 ms
+select arc.ID AS IDa, rc.ID as IDb,
+(A-C)*(A-C) + (B-D)*(B-D) AS distance, L, rank() over(partition by rc.ID order by distance) as r
+from arc, rc
+
+====== 12/12 20:12:45 tc_ll/arc=arc/rc=rc1/codegen=true/partitions=3/joinType=ShuffleHashJoin/fixpointTask=false/output=query/test_out/startvertex=1/log=error ======
+
+Load: 2829 ms
+
+RamSQL Parse: 114 ms
+select arc.ID AS IDa, rc.ID as IDb,
+(A-C)*(A-C) + (B-D)*(B-D) AS distance, L, rank() over(partition by rc.ID order by distance) as r
+from arc, rc
+
+====== 12/12 20:15:14 tc_ll/arc=arc/rc=rc1/codegen=true/partitions=3/joinType=ShuffleHashJoin/fixpointTask=false/output=query/test_out/startvertex=1/log=error ======
+
+Load: 2861 ms
+
+RamSQL Parse: 151 ms
+select IDa, IDb, rank() over(partition by IDa order by distance) as rank
+from (
+select arc.ID AS IDa, rc.ID as IDb, (A-C)*(A-C) + (B-D)*(B-D) AS distance, L
+from arc, rc
+) as merge
+
+== Parsed Logical Plan ==
+'Project ['IDa, 'IDb, 'rank() windowspecdefinition('IDa, 'distance ASC, UnspecifiedFrame) AS rank#21]
++- 'SubqueryAlias merge
+   +- 'Project ['arc.ID AS IDa#18, 'rc.ID AS IDb#19, ((('A - 'C) * ('A - 'C)) + (('B - 'D) * ('B - 'D))) AS distance#20, 'L]
+      +- 'Join Inner
+         :- 'UnresolvedRelation `arc`
+         +- 'UnresolvedRelation `rc`
+
+== Analyzed Logical Plan ==
+IDa: int, IDb: int, rank: int
+Project [IDa#18, IDb#19, rank#21]
++- Project [IDa#18, IDb#19, distance#20, rank#21, rank#21]
+   +- Window [rank(distance#20) windowspecdefinition(IDa#18, distance#20 ASC, ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS rank#21], [IDa#18], [distance#20 ASC]
+      +- Project [IDa#18, IDb#19, distance#20]
+         +- SubqueryAlias merge
+            +- Project [ID#0 AS IDa#18, ID#10 AS IDb#19, (((A#1 - C#11) * (A#1 - C#11)) + ((B#2 - D#12) * (B#2 - D#12))) AS distance#20, L#3]
+               +- Join Inner
+                  :- SubqueryAlias arc
+                  :  +- LogicalRDD [ID#0, A#1, B#2, L#3]
+                  +- SubqueryAlias rc
+                     +- LogicalRDD [ID#10, C#11, D#12]
+
+== Optimized Logical Plan ==
+Project [IDa#18, IDb#19, rank#21]
++- Window [rank(distance#20) windowspecdefinition(IDa#18, distance#20 ASC, ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS rank#21], [IDa#18], [distance#20 ASC]
+   +- Project [ID#0 AS IDa#18, ID#10 AS IDb#19, (((A#1 - C#11) * (A#1 - C#11)) + ((B#2 - D#12) * (B#2 - D#12))) AS distance#20]
+      +- Join Inner
+         :- LogicalRDD [ID#0, A#1, B#2, L#3]
+         +- LogicalRDD [ID#10, C#11, D#12]
+
+== Physical Plan ==
+*Project [IDa#18, IDb#19, rank#21]
++- Window [rank(distance#20) windowspecdefinition(IDa#18, distance#20 ASC, ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS rank#21], [IDa#18], [distance#20 ASC]
+   +- *Sort [IDa#18 ASC, distance#20 ASC], false, 0
+      +- Exchange hashpartitioning(IDa#18, 3)
+         +- *Project [ID#0 AS IDa#18, ID#10 AS IDb#19, (((A#1 - C#11) * (A#1 - C#11)) + ((B#2 - D#12) * (B#2 - D#12))) AS distance#20]
+            +- CartesianProduct
+               :- Scan ExistingRDD[ID#0,A#1,B#2,L#3]
+               +- Scan ExistingRDD[ID#10,C#11,D#12]
+
+[Success - Execution Finished]
+Compile RamSQL: 403 ms
+Execution (Collect): 2307 ms
+Total: 5612 ms
+Result Size: 12
+
+====== 12/12 20:15:47 tc_ll/arc=arc/rc=rc1/codegen=true/partitions=3/joinType=ShuffleHashJoin/fixpointTask=false/output=query/test_out/startvertex=1/log=error ======
+
+Load: 2760 ms
+
+RamSQL Parse: 136 ms
+select IDa, IDb, distance, rank() over(partition by IDa order by distance) as rank
+from (
+select arc.ID AS IDa, rc.ID as IDb, (A-C)*(A-C) + (B-D)*(B-D) AS distance, L
+from arc, rc
+) as merge
+
+== Parsed Logical Plan ==
+'Project ['IDa, 'IDb, 'distance, 'rank() windowspecdefinition('IDa, 'distance ASC, UnspecifiedFrame) AS rank#21]
++- 'SubqueryAlias merge
+   +- 'Project ['arc.ID AS IDa#18, 'rc.ID AS IDb#19, ((('A - 'C) * ('A - 'C)) + (('B - 'D) * ('B - 'D))) AS distance#20, 'L]
+      +- 'Join Inner
+         :- 'UnresolvedRelation `arc`
+         +- 'UnresolvedRelation `rc`
+
+== Analyzed Logical Plan ==
+IDa: int, IDb: int, distance: int, rank: int
+Project [IDa#18, IDb#19, distance#20, rank#21]
++- Project [IDa#18, IDb#19, distance#20, rank#21, rank#21]
+   +- Window [rank(distance#20) windowspecdefinition(IDa#18, distance#20 ASC, ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS rank#21], [IDa#18], [distance#20 ASC]
+      +- Project [IDa#18, IDb#19, distance#20]
+         +- SubqueryAlias merge
+            +- Project [ID#0 AS IDa#18, ID#10 AS IDb#19, (((A#1 - C#11) * (A#1 - C#11)) + ((B#2 - D#12) * (B#2 - D#12))) AS distance#20, L#3]
+               +- Join Inner
+                  :- SubqueryAlias arc
+                  :  +- LogicalRDD [ID#0, A#1, B#2, L#3]
+                  +- SubqueryAlias rc
+                     +- LogicalRDD [ID#10, C#11, D#12]
+
+== Optimized Logical Plan ==
+Project [IDa#18, IDb#19, distance#20, rank#21]
++- Window [rank(distance#20) windowspecdefinition(IDa#18, distance#20 ASC, ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS rank#21], [IDa#18], [distance#20 ASC]
+   +- Project [ID#0 AS IDa#18, ID#10 AS IDb#19, (((A#1 - C#11) * (A#1 - C#11)) + ((B#2 - D#12) * (B#2 - D#12))) AS distance#20]
+      +- Join Inner
+         :- LogicalRDD [ID#0, A#1, B#2, L#3]
+         +- LogicalRDD [ID#10, C#11, D#12]
+
+== Physical Plan ==
+*Project [IDa#18, IDb#19, distance#20, rank#21]
++- Window [rank(distance#20) windowspecdefinition(IDa#18, distance#20 ASC, ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS rank#21], [IDa#18], [distance#20 ASC]
+   +- *Sort [IDa#18 ASC, distance#20 ASC], false, 0
+      +- Exchange hashpartitioning(IDa#18, 3)
+         +- *Project [ID#0 AS IDa#18, ID#10 AS IDb#19, (((A#1 - C#11) * (A#1 - C#11)) + ((B#2 - D#12) * (B#2 - D#12))) AS distance#20]
+            +- CartesianProduct
+               :- Scan ExistingRDD[ID#0,A#1,B#2,L#3]
+               +- Scan ExistingRDD[ID#10,C#11,D#12]
+
+[Success - Execution Finished]
+Compile RamSQL: 357 ms
+Execution (Collect): 2054 ms
+Total: 5206 ms
+Result Size: 12
+
+====== 12/12 20:16:21 tc_ll/arc=arc/rc=rc1/codegen=true/partitions=3/joinType=ShuffleHashJoin/fixpointTask=false/output=query/test_out/startvertex=1/log=error ======
+
+Load: 2629 ms
+
+RamSQL Parse: 136 ms
+select IDa, IDb, distance, rank() over(partition by IDb order by distance) as rank
+from (
+select arc.ID AS IDa, rc.ID as IDb, (A-C)*(A-C) + (B-D)*(B-D) AS distance, L
+from arc, rc
+) as merge
+
+== Parsed Logical Plan ==
+'Project ['IDa, 'IDb, 'distance, 'rank() windowspecdefinition('IDb, 'distance ASC, UnspecifiedFrame) AS rank#21]
++- 'SubqueryAlias merge
+   +- 'Project ['arc.ID AS IDa#18, 'rc.ID AS IDb#19, ((('A - 'C) * ('A - 'C)) + (('B - 'D) * ('B - 'D))) AS distance#20, 'L]
+      +- 'Join Inner
+         :- 'UnresolvedRelation `arc`
+         +- 'UnresolvedRelation `rc`
+
+== Analyzed Logical Plan ==
+IDa: int, IDb: int, distance: int, rank: int
+Project [IDa#18, IDb#19, distance#20, rank#21]
++- Project [IDa#18, IDb#19, distance#20, rank#21, rank#21]
+   +- Window [rank(distance#20) windowspecdefinition(IDb#19, distance#20 ASC, ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS rank#21], [IDb#19], [distance#20 ASC]
+      +- Project [IDa#18, IDb#19, distance#20]
+         +- SubqueryAlias merge
+            +- Project [ID#0 AS IDa#18, ID#10 AS IDb#19, (((A#1 - C#11) * (A#1 - C#11)) + ((B#2 - D#12) * (B#2 - D#12))) AS distance#20, L#3]
+               +- Join Inner
+                  :- SubqueryAlias arc
+                  :  +- LogicalRDD [ID#0, A#1, B#2, L#3]
+                  +- SubqueryAlias rc
+                     +- LogicalRDD [ID#10, C#11, D#12]
+
+== Optimized Logical Plan ==
+Project [IDa#18, IDb#19, distance#20, rank#21]
++- Window [rank(distance#20) windowspecdefinition(IDb#19, distance#20 ASC, ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS rank#21], [IDb#19], [distance#20 ASC]
+   +- Project [ID#0 AS IDa#18, ID#10 AS IDb#19, (((A#1 - C#11) * (A#1 - C#11)) + ((B#2 - D#12) * (B#2 - D#12))) AS distance#20]
+      +- Join Inner
+         :- LogicalRDD [ID#0, A#1, B#2, L#3]
+         +- LogicalRDD [ID#10, C#11, D#12]
+
+== Physical Plan ==
+*Project [IDa#18, IDb#19, distance#20, rank#21]
++- Window [rank(distance#20) windowspecdefinition(IDb#19, distance#20 ASC, ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS rank#21], [IDb#19], [distance#20 ASC]
+   +- *Sort [IDb#19 ASC, distance#20 ASC], false, 0
+      +- Exchange hashpartitioning(IDb#19, 3)
+         +- *Project [ID#0 AS IDa#18, ID#10 AS IDb#19, (((A#1 - C#11) * (A#1 - C#11)) + ((B#2 - D#12) * (B#2 - D#12))) AS distance#20]
+            +- CartesianProduct
+               :- Scan ExistingRDD[ID#0,A#1,B#2,L#3]
+               +- Scan ExistingRDD[ID#10,C#11,D#12]
+
+[Success - Execution Finished]
+Compile RamSQL: 352 ms
+Execution (Collect): 1991 ms
+Total: 5010 ms
+Result Size: 12
+
+====== 12/12 20:24:27 tc_ll/arc=arc/rc=rc1/codegen=true/partitions=3/joinType=ShuffleHashJoin/fixpointTask=false/output=query/test_out/startvertex=1/log=error ======
+
+Load: 7090 ms
+
+RamSQL Parse: 293 ms
+select IDb, count(IDa)
+from (
+select IDa, IDb, distance, L, rank() over(partition by IDb order by distance) as rank
+from (
+select arc.ID AS IDa, rc.ID as IDb, (A-C)*(A-C) + (B-D)*(B-D) AS distance, L
+from arc, rc
+) as merge
+) as total
+where rank <= 3
+group by IDb, L
+
+== Parsed Logical Plan ==
+'Aggregate ['IDb, 'L], ['IDb, unresolvedalias('count('IDa), None)]
++- 'Filter ('rank <= 3)
+   +- 'SubqueryAlias total
+      +- 'Project ['IDa, 'IDb, 'distance, 'L, 'rank() windowspecdefinition('IDb, 'distance ASC, UnspecifiedFrame) AS rank#21]
+         +- 'SubqueryAlias merge
+            +- 'Project ['arc.ID AS IDa#18, 'rc.ID AS IDb#19, ((('A - 'C) * ('A - 'C)) + (('B - 'D) * ('B - 'D))) AS distance#20, 'L]
+               +- 'Join Inner
+                  :- 'UnresolvedRelation `arc`
+                  +- 'UnresolvedRelation `rc`
+
+== Analyzed Logical Plan ==
+IDb: int, _c1: bigint
+Aggregate [IDb#19, L#3], [IDb#19, count(IDa#18) AS _c1#25L]
++- Filter (rank#21 <= 3)
+   +- SubqueryAlias total
+      +- Project [IDa#18, IDb#19, distance#20, L#3, rank#21]
+         +- Project [IDa#18, IDb#19, distance#20, L#3, rank#21, rank#21]
+            +- Window [rank(distance#20) windowspecdefinition(IDb#19, distance#20 ASC, ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS rank#21], [IDb#19], [distance#20 ASC]
+               +- Project [IDa#18, IDb#19, distance#20, L#3]
+                  +- SubqueryAlias merge
+                     +- Project [ID#0 AS IDa#18, ID#10 AS IDb#19, (((A#1 - C#11) * (A#1 - C#11)) + ((B#2 - D#12) * (B#2 - D#12))) AS distance#20, L#3]
+                        +- Join Inner
+                           :- SubqueryAlias arc
+                           :  +- LogicalRDD [ID#0, A#1, B#2, L#3]
+                           +- SubqueryAlias rc
+                              +- LogicalRDD [ID#10, C#11, D#12]
+
+== Optimized Logical Plan ==
+Aggregate [IDb#19, L#3], [IDb#19, count(IDa#18) AS _c1#25L]
++- Project [IDa#18, IDb#19, distance#20, L#3, rank#21]
+   +- Filter (rank#21 <= 3)
+      +- Window [rank(distance#20) windowspecdefinition(IDb#19, distance#20 ASC, ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS rank#21], [IDb#19], [distance#20 ASC]
+         +- Project [ID#0 AS IDa#18, ID#10 AS IDb#19, (((A#1 - C#11) * (A#1 - C#11)) + ((B#2 - D#12) * (B#2 - D#12))) AS distance#20, L#3]
+            +- Join Inner
+               :- LogicalRDD [ID#0, A#1, B#2, L#3]
+               +- LogicalRDD [ID#10, C#11, D#12]
+
+== Physical Plan ==
+*HashAggregate(keys=[IDb#19, L#3], functions=[count(IDa#18)], output=[IDb#19, _c1#25L])
++- *HashAggregate(keys=[IDb#19, L#3], functions=[partial_count(IDa#18)], output=[IDb#19, L#3, count#33L])
+   +- *Project [IDa#18, IDb#19, distance#20, L#3, rank#21]
+      +- *Filter (rank#21 <= 3)
+         +- Window [rank(distance#20) windowspecdefinition(IDb#19, distance#20 ASC, ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS rank#21], [IDb#19], [distance#20 ASC]
+            +- *Sort [IDb#19 ASC, distance#20 ASC], false, 0
+               +- Exchange hashpartitioning(IDb#19, 3)
+                  +- *Project [ID#0 AS IDa#18, ID#10 AS IDb#19, (((A#1 - C#11) * (A#1 - C#11)) + ((B#2 - D#12) * (B#2 - D#12))) AS distance#20, L#3]
+                     +- CartesianProduct
+                        :- Scan ExistingRDD[ID#0,A#1,B#2,L#3]
+                        +- Scan ExistingRDD[ID#10,C#11,D#12]
+
+[Success - Execution Finished]
+Compile RamSQL: 1118 ms
+Execution (Collect): 4181 ms
+Total: 12469 ms
+Result Size: 4
+
+====== 12/12 20:25:08 tc_ll/arc=arc/rc=rc1/codegen=true/partitions=3/joinType=ShuffleHashJoin/fixpointTask=false/output=query/test_out/startvertex=1/log=error ======
+
+Load: 3444 ms
+
+RamSQL Parse: 330 ms
+select IDb, L, count(IDa)
+from (
+select IDa, IDb, distance, L, rank() over(partition by IDb order by distance) as rank
+from (
+select arc.ID AS IDa, rc.ID as IDb, (A-C)*(A-C) + (B-D)*(B-D) AS distance, L
+from arc, rc
+) as merge
+) as total
+where rank <= 3
+group by IDb, L
+
+== Parsed Logical Plan ==
+'Aggregate ['IDb, 'L], ['IDb, 'L, unresolvedalias('count('IDa), None)]
++- 'Filter ('rank <= 3)
+   +- 'SubqueryAlias total
+      +- 'Project ['IDa, 'IDb, 'distance, 'L, 'rank() windowspecdefinition('IDb, 'distance ASC, UnspecifiedFrame) AS rank#21]
+         +- 'SubqueryAlias merge
+            +- 'Project ['arc.ID AS IDa#18, 'rc.ID AS IDb#19, ((('A - 'C) * ('A - 'C)) + (('B - 'D) * ('B - 'D))) AS distance#20, 'L]
+               +- 'Join Inner
+                  :- 'UnresolvedRelation `arc`
+                  +- 'UnresolvedRelation `rc`
+
+== Analyzed Logical Plan ==
+IDb: int, L: string, _c2: bigint
+Aggregate [IDb#19, L#3], [IDb#19, L#3, count(IDa#18) AS _c2#25L]
++- Filter (rank#21 <= 3)
+   +- SubqueryAlias total
+      +- Project [IDa#18, IDb#19, distance#20, L#3, rank#21]
+         +- Project [IDa#18, IDb#19, distance#20, L#3, rank#21, rank#21]
+            +- Window [rank(distance#20) windowspecdefinition(IDb#19, distance#20 ASC, ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS rank#21], [IDb#19], [distance#20 ASC]
+               +- Project [IDa#18, IDb#19, distance#20, L#3]
+                  +- SubqueryAlias merge
+                     +- Project [ID#0 AS IDa#18, ID#10 AS IDb#19, (((A#1 - C#11) * (A#1 - C#11)) + ((B#2 - D#12) * (B#2 - D#12))) AS distance#20, L#3]
+                        +- Join Inner
+                           :- SubqueryAlias arc
+                           :  +- LogicalRDD [ID#0, A#1, B#2, L#3]
+                           +- SubqueryAlias rc
+                              +- LogicalRDD [ID#10, C#11, D#12]
+
+== Optimized Logical Plan ==
+Aggregate [IDb#19, L#3], [IDb#19, L#3, count(IDa#18) AS _c2#25L]
++- Project [IDa#18, IDb#19, distance#20, L#3, rank#21]
+   +- Filter (rank#21 <= 3)
+      +- Window [rank(distance#20) windowspecdefinition(IDb#19, distance#20 ASC, ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS rank#21], [IDb#19], [distance#20 ASC]
+         +- Project [ID#0 AS IDa#18, ID#10 AS IDb#19, (((A#1 - C#11) * (A#1 - C#11)) + ((B#2 - D#12) * (B#2 - D#12))) AS distance#20, L#3]
+            +- Join Inner
+               :- LogicalRDD [ID#0, A#1, B#2, L#3]
+               +- LogicalRDD [ID#10, C#11, D#12]
+
+== Physical Plan ==
+*HashAggregate(keys=[IDb#19, L#3], functions=[count(IDa#18)], output=[IDb#19, L#3, _c2#25L])
++- *HashAggregate(keys=[IDb#19, L#3], functions=[partial_count(IDa#18)], output=[IDb#19, L#3, count#33L])
+   +- *Project [IDa#18, IDb#19, distance#20, L#3, rank#21]
+      +- *Filter (rank#21 <= 3)
+         +- Window [rank(distance#20) windowspecdefinition(IDb#19, distance#20 ASC, ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS rank#21], [IDb#19], [distance#20 ASC]
+            +- *Sort [IDb#19 ASC, distance#20 ASC], false, 0
+               +- Exchange hashpartitioning(IDb#19, 3)
+                  +- *Project [ID#0 AS IDa#18, ID#10 AS IDb#19, (((A#1 - C#11) * (A#1 - C#11)) + ((B#2 - D#12) * (B#2 - D#12))) AS distance#20, L#3]
+                     +- CartesianProduct
+                        :- Scan ExistingRDD[ID#0,A#1,B#2,L#3]
+                        +- Scan ExistingRDD[ID#10,C#11,D#12]
+
+[Success - Execution Finished]
+Compile RamSQL: 704 ms
+Execution (Collect): 2505 ms
+Total: 6694 ms
+Result Size: 4
+
+====== 12/12 21:10:08 tc_ll/arc=arc/rc=rc1/codegen=true/partitions=3/joinType=ShuffleHashJoin/fixpointTask=false/output=query/test_out/startvertex=1/log=error ======
+
+Load: 7624 ms
+
+RamSQL Parse: 330 ms
+select IDb, L, count(IDa)
+from (
+select IDa, IDb, distance, L, rank() over(partition by IDb order by distance) as rank
+from (
+select arc.ID AS IDa, rc.ID as IDb, (A-C)*(A-C) + (B-D)*(B-D) AS distance, L
+from arc, rc
+) as merge
+) as total
+where rank <= 3
+group by IDb, L
+
+== Parsed Logical Plan ==
+'Aggregate ['IDb, 'L], ['IDb, 'L, unresolvedalias('count('IDa), None)]
++- 'Filter ('rank <= 3)
+   +- 'SubqueryAlias total
+      +- 'Project ['IDa, 'IDb, 'distance, 'L, 'rank() windowspecdefinition('IDb, 'distance ASC, UnspecifiedFrame) AS rank#21]
+         +- 'SubqueryAlias merge
+            +- 'Project ['arc.ID AS IDa#18, 'rc.ID AS IDb#19, ((('A - 'C) * ('A - 'C)) + (('B - 'D) * ('B - 'D))) AS distance#20, 'L]
+               +- 'Join Inner
+                  :- 'UnresolvedRelation `arc`
+                  +- 'UnresolvedRelation `rc`
+
+== Analyzed Logical Plan ==
+IDb: int, L: string, _c2: bigint
+Aggregate [IDb#19, L#3], [IDb#19, L#3, count(IDa#18) AS _c2#25L]
++- Filter (rank#21 <= 3)
+   +- SubqueryAlias total
+      +- Project [IDa#18, IDb#19, distance#20, L#3, rank#21]
+         +- Project [IDa#18, IDb#19, distance#20, L#3, rank#21, rank#21]
+            +- Window [rank(distance#20) windowspecdefinition(IDb#19, distance#20 ASC, ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS rank#21], [IDb#19], [distance#20 ASC]
+               +- Project [IDa#18, IDb#19, distance#20, L#3]
+                  +- SubqueryAlias merge
+                     +- Project [ID#0 AS IDa#18, ID#10 AS IDb#19, (((A#1 - C#11) * (A#1 - C#11)) + ((B#2 - D#12) * (B#2 - D#12))) AS distance#20, L#3]
+                        +- Join Inner
+                           :- SubqueryAlias arc
+                           :  +- LogicalRDD [ID#0, A#1, B#2, L#3]
+                           +- SubqueryAlias rc
+                              +- LogicalRDD [ID#10, C#11, D#12]
+
+== Optimized Logical Plan ==
+Aggregate [IDb#19, L#3], [IDb#19, L#3, count(IDa#18) AS _c2#25L]
++- Project [IDa#18, IDb#19, distance#20, L#3, rank#21]
+   +- Filter (rank#21 <= 3)
+      +- Window [rank(distance#20) windowspecdefinition(IDb#19, distance#20 ASC, ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS rank#21], [IDb#19], [distance#20 ASC]
+         +- Project [ID#0 AS IDa#18, ID#10 AS IDb#19, (((A#1 - C#11) * (A#1 - C#11)) + ((B#2 - D#12) * (B#2 - D#12))) AS distance#20, L#3]
+            +- Join Inner
+               :- LogicalRDD [ID#0, A#1, B#2, L#3]
+               +- LogicalRDD [ID#10, C#11, D#12]
+
+== Physical Plan ==
+*HashAggregate(keys=[IDb#19, L#3], functions=[count(IDa#18)], output=[IDb#19, L#3, _c2#25L])
++- *HashAggregate(keys=[IDb#19, L#3], functions=[partial_count(IDa#18)], output=[IDb#19, L#3, count#33L])
+   +- *Project [IDa#18, IDb#19, distance#20, L#3, rank#21]
+      +- *Filter (rank#21 <= 3)
+         +- Window [rank(distance#20) windowspecdefinition(IDb#19, distance#20 ASC, ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS rank#21], [IDb#19], [distance#20 ASC]
+            +- *Sort [IDb#19 ASC, distance#20 ASC], false, 0
+               +- Exchange hashpartitioning(IDb#19, 3)
+                  +- *Project [ID#0 AS IDa#18, ID#10 AS IDb#19, (((A#1 - C#11) * (A#1 - C#11)) + ((B#2 - D#12) * (B#2 - D#12))) AS distance#20, L#3]
+                     +- CartesianProduct
+                        :- Scan ExistingRDD[ID#0,A#1,B#2,L#3]
+                        +- Scan ExistingRDD[ID#10,C#11,D#12]
+
+
+====== 12/12 21:12:47 tc_ll/arc=arc/rc=rc1/codegen=true/partitions=3/joinType=ShuffleHashJoin/fixpointTask=false/output=query/test_out/startvertex=1/log=error ======
+
+Load: 7501 ms
+
+RamSQL Parse: 373 ms
+select IDb, L, count(IDa)
+from (
+select IDa, IDb, distance, L, rank() over(partition by IDb order by distance) as rank
+from (
+select arc.ID AS IDa, rc.ID as IDb, (A-C)*(A-C) + (B-D)*(B-D) AS distance, L
+from arc, rc
+) as merge
+) as total
+where rank <= 3
+group by IDb, L
+
+== Parsed Logical Plan ==
+'Aggregate ['IDb, 'L], ['IDb, 'L, unresolvedalias('count('IDa), None)]
++- 'Filter ('rank <= 3)
+   +- 'SubqueryAlias total
+      +- 'Project ['IDa, 'IDb, 'distance, 'L, 'rank() windowspecdefinition('IDb, 'distance ASC, UnspecifiedFrame) AS rank#21]
+         +- 'SubqueryAlias merge
+            +- 'Project ['arc.ID AS IDa#18, 'rc.ID AS IDb#19, ((('A - 'C) * ('A - 'C)) + (('B - 'D) * ('B - 'D))) AS distance#20, 'L]
+               +- 'Join Inner
+                  :- 'UnresolvedRelation `arc`
+                  +- 'UnresolvedRelation `rc`
+
+== Analyzed Logical Plan ==
+IDb: int, L: string, _c2: bigint
+Aggregate [IDb#19, L#3], [IDb#19, L#3, count(IDa#18) AS _c2#25L]
++- Filter (rank#21 <= 3)
+   +- SubqueryAlias total
+      +- Project [IDa#18, IDb#19, distance#20, L#3, rank#21]
+         +- Project [IDa#18, IDb#19, distance#20, L#3, rank#21, rank#21]
+            +- Window [rank(distance#20) windowspecdefinition(IDb#19, distance#20 ASC, ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS rank#21], [IDb#19], [distance#20 ASC]
+               +- Project [IDa#18, IDb#19, distance#20, L#3]
+                  +- SubqueryAlias merge
+                     +- Project [ID#0 AS IDa#18, ID#10 AS IDb#19, (((A#1 - C#11) * (A#1 - C#11)) + ((B#2 - D#12) * (B#2 - D#12))) AS distance#20, L#3]
+                        +- Join Inner
+                           :- SubqueryAlias arc
+                           :  +- LogicalRDD [ID#0, A#1, B#2, L#3]
+                           +- SubqueryAlias rc
+                              +- LogicalRDD [ID#10, C#11, D#12]
+
+== Optimized Logical Plan ==
+Aggregate [IDb#19, L#3], [IDb#19, L#3, count(IDa#18) AS _c2#25L]
++- Project [IDa#18, IDb#19, distance#20, L#3, rank#21]
+   +- Filter (rank#21 <= 3)
+      +- Window [rank(distance#20) windowspecdefinition(IDb#19, distance#20 ASC, ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS rank#21], [IDb#19], [distance#20 ASC]
+         +- Project [ID#0 AS IDa#18, ID#10 AS IDb#19, (((A#1 - C#11) * (A#1 - C#11)) + ((B#2 - D#12) * (B#2 - D#12))) AS distance#20, L#3]
+            +- Join Inner
+               :- LogicalRDD [ID#0, A#1, B#2, L#3]
+               +- LogicalRDD [ID#10, C#11, D#12]
+
+== Physical Plan ==
+*HashAggregate(keys=[IDb#19, L#3], functions=[count(IDa#18)], output=[IDb#19, L#3, _c2#25L])
++- *HashAggregate(keys=[IDb#19, L#3], functions=[partial_count(IDa#18)], output=[IDb#19, L#3, count#33L])
+   +- *Project [IDa#18, IDb#19, distance#20, L#3, rank#21]
+      +- *Filter (rank#21 <= 3)
+         +- Window [rank(distance#20) windowspecdefinition(IDb#19, distance#20 ASC, ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS rank#21], [IDb#19], [distance#20 ASC]
+            +- *Sort [IDb#19 ASC, distance#20 ASC], false, 0
+               +- Exchange hashpartitioning(IDb#19, 3)
+                  +- *Project [ID#0 AS IDa#18, ID#10 AS IDb#19, (((A#1 - C#11) * (A#1 - C#11)) + ((B#2 - D#12) * (B#2 - D#12))) AS distance#20, L#3]
+                     +- CartesianProduct
+                        :- Scan ExistingRDD[ID#0,A#1,B#2,L#3]
+                        +- Scan ExistingRDD[ID#10,C#11,D#12]
+
+[Success - Execution Finished]
+Compile RamSQL: 1173 ms
+Execution (Collect): 4607 ms
+Total: 13370 ms
+Result Size: 4
+
+====== 12/12 22:39:52 tc_ll/arc=arc/rc=rc1/codegen=true/partitions=3/joinType=ShuffleHashJoin/fixpointTask=false/output=query/test_out/startvertex=1/log=error ======
+
+Load: 7339 ms
+
+RamSQL Parse: 367 ms
+CREATE VIEW knn AS
+select IDb, L, count(IDa) as cou
+from (
+select IDa, IDb, distance, L, rank() over(partition by IDb order by distance) as rank
+from (
+select arc.ID AS IDa, rc.ID as IDb, (A-C)*(A-C) + (B-D)*(B-D) AS distance, L
+from arc, rc
+) as merge
+) as total
+where rank <= 3
+group by IDb, L
+[Success - View Created] knn()
+
+RamSQL Parse: 3 ms
+select IDb, L, rank() over(partition by IDb order by cou) as rank
+from knn
+
+====== 12/12 22:41:01 tc_ll/arc=arc/rc=rc1/codegen=true/partitions=3/joinType=ShuffleHashJoin/fixpointTask=false/output=query/test_out/startvertex=1/log=error ======
+
+Load: 2895 ms
+
+RamSQL Parse: 177 ms
+CREATE VIEW knn AS
+select IDb, L, count(IDa) as cou
+from (
+select IDa, IDb, distance, L, rank() over(partition by IDb order by distance) as rank
+from (
+select arc.ID AS IDa, rc.ID as IDb, (A-C)*(A-C) + (B-D)*(B-D) AS distance, L
+from arc, rc
+) as merge
+) as total
+where rank <= 3
+group by IDb, L
+[Success - View Created] knn()
+Compile RamSQL: 181 ms
+Execution (Collect): 1535 ms
+Total: 4617 ms
+Result Size: 0
+
+====== 12/12 22:41:53 tc_ll/arc=arc/rc=rc1/codegen=true/partitions=3/joinType=ShuffleHashJoin/fixpointTask=false/output=query/test_out/startvertex=1/log=error ======
+
+Load: 2758 ms
+
+RamSQL Parse: 207 ms
+CREATE VIEW knn AS
+select IDb, L, count(IDa) as cou
+from (
+select IDa, IDb, distance, L, rank() over(partition by IDb order by distance) as rank
+from (
+select arc.ID AS IDa, rc.ID as IDb, (A-C)*(A-C) + (B-D)*(B-D) AS distance, L
+from arc, rc
+) as merge
+) as total
+where rank <= 3
+group by IDb, L
+[Success - View Created] knn()
+
+RamSQL Parse: 3 ms
+select *
+from knn
+
+== Parsed Logical Plan ==
+'Project [*]
++- 'UnresolvedRelation `knn`
+
+== Analyzed Logical Plan ==
+Project
++- SubqueryAlias knn
+   +- LogicalRDD
+
+== Optimized Logical Plan ==
+LogicalRDD
+
+== Physical Plan ==
+Scan ExistingRDD[]
+
+[Success - Execution Finished]
+Compile RamSQL: 225 ms
+Execution (Collect): 3579 ms
+Total: 6605 ms
+Result Size: 4
+
+====== 12/12 22:44:42 tc_ll/arc=arc/rc=rc1/codegen=true/partitions=3/joinType=ShuffleHashJoin/fixpointTask=false/output=query/test_out/startvertex=1/log=error ======
+
+Load: 7368 ms
+
+RamSQL Parse: 281 ms
+CREATE VIEW knn AS
+select IDb, L, count(IDa) as cou
+from (
+select IDa, IDb, distance, L, rank() over(partition by IDb order by distance) as rank
+from (
+select arc.ID AS IDa, rc.ID as IDb, (A-C)*(A-C) + (B-D)*(B-D) AS distance, L
+from arc, rc
+) as merge
+) as total
+where rank <= 3
+group by IDb, L
+[Success - View Created] knn()
+
+RamSQL Parse: 2 ms
+select IDb, L, cou
+from knn
+
+====== 12/12 22:47:06 tc_ll/arc=arc/rc=rc1/codegen=true/partitions=3/joinType=ShuffleHashJoin/fixpointTask=false/output=query/test_out/startvertex=1/log=error ======
+
+Load: 2673 ms
+
+RamSQL Parse: 194 ms
+CREATE VIEW knn(IDb, L, cou) AS
+select IDb, L, count(IDa) as cou
+from (
+select IDa, IDb, distance, L, rank() over(partition by IDb order by distance) as rank
+from (
+select arc.ID AS IDa, rc.ID as IDb, (A-C)*(A-C) + (B-D)*(B-D) AS distance, L
+from arc, rc
+) as merge
+) as total
+where rank <= 3
+group by IDb, L
+[Success - View Created] knn(IDb: integer, L: string, cou: long)
+
+RamSQL Parse: 1 ms
+select IDb, L, cou
+from knn
+
+== Parsed Logical Plan ==
+'Project ['IDb, 'L, 'cou]
++- 'UnresolvedRelation `knn`
+
+== Analyzed Logical Plan ==
+IDb: int, L: string, cou: bigint
+Project [IDb#40, L#41, cou#42L]
++- SubqueryAlias knn
+   +- LogicalRDD [IDb#40, L#41, cou#42L]
+
+== Optimized Logical Plan ==
+Project [IDb#40, L#41, cou#42L]
++- LogicalRDD [IDb#40, L#41, cou#42L]
+
+== Physical Plan ==
+*Project [IDb#40, L#41, cou#42L]
++- Scan ExistingRDD[IDb#40,L#41,cou#42L]
+
+[Success - Execution Finished]
+Compile RamSQL: 205 ms
+Execution (Collect): 3688 ms
+Total: 6615 ms
+Result Size: 4
+
+====== 12/12 22:51:51 tc_ll/arc=arc/rc=rc1/codegen=true/partitions=3/joinType=ShuffleHashJoin/fixpointTask=false/output=query/test_out/startvertex=1/log=error ======
+
+Load: 2944 ms
+
+RamSQL Parse: 203 ms
+CREATE VIEW knn(IDb, L, cou) AS
+select IDb, L, count(IDa) as cou
+from (
+select IDa, IDb, distance, L, rank() over(partition by IDb order by distance) as rank
+from (
+select arc.ID AS IDa, rc.ID as IDb, (A-C)*(A-C) + (B-D)*(B-D) AS distance, L
+from arc, rc
+) as merge
+) as total
+where rank <= 3
+group by IDb, L
+[Success - View Created] knn(IDb: integer, L: string, cou: long)
+
+RamSQL Parse: 50 ms
+SELECT IDb, count(M = L or null)/count(IDb) as acc
+from rc,
+(
+select k.IDb, k.L
+from knn k
+where k.cou >= ( select max(n.cou) from knn n group by n.IDb)
+) as final
+where final.IDb = rc.IDb
+
+====== 12/12 22:52:39 tc_ll/arc=arc/rc=rc1/codegen=true/partitions=3/joinType=ShuffleHashJoin/fixpointTask=false/output=query/test_out/startvertex=1/log=error ======
+
+Load: 2744 ms
+
+RamSQL Parse: 188 ms
+CREATE VIEW knn(IDb, L, cou) AS
+select IDb, L, count(IDa) as cou
+from (
+select IDa, IDb, distance, L, rank() over(partition by IDb order by distance) as rank
+from (
+select arc.ID AS IDa, rc.ID as IDb, (A-C)*(A-C) + (B-D)*(B-D) AS distance, L
+from arc, rc
+) as merge
+) as total
+where rank <= 3
+group by IDb, L
+[Success - View Created] knn(IDb: integer, L: string, cou: long)
+
+RamSQL Parse: 52 ms
+SELECT IDb, count(M = L or null)/count(IDb) as acc
+from rc,
+(
+select k.IDb, k.L
+from knn k
+where k.cou >= ( select max(n.cou) from knn n group by n.IDb)
+) as final
+where final.IDb = rc.ID
+
+====== 12/12 22:54:26 tc_ll/arc=arc/rc=rc1/codegen=true/partitions=3/joinType=ShuffleHashJoin/fixpointTask=false/output=query/test_out/startvertex=1/log=error ======
+
+Load: 2786 ms
+
+RamSQL Parse: 177 ms
+CREATE VIEW knn(IDb, L, cou) AS
+select IDb, L, count(IDa) as cou
+from (
+select IDa, IDb, distance, L, rank() over(partition by IDb order by distance) as rank
+from (
+select arc.ID AS IDa, rc.ID as IDb, (A-C)*(A-C) + (B-D)*(B-D) AS distance, L
+from arc, rc
+) as merge
+) as total
+where rank <= 3
+group by IDb, L
+[Success - View Created] knn(IDb: integer, L: string, cou: long)
+
+RamSQL Parse: 41 ms
+SELECT ID, L, M
+from rc,
+(
+select k.IDb, k.L
+from knn k
+where k.cou >= ( select max(n.cou) from knn n group by n.IDb)
+) as final
+where final.IDb = rc.ID
+
+== Parsed Logical Plan ==
+'Project ['ID, 'L, 'M]
++- 'Filter ('final.IDb = 'rc.ID)
+   +- 'Join Inner
+      :- 'UnresolvedRelation `rc`
+      +- 'SubqueryAlias final
+         +- 'Project ['k.IDb, 'k.L]
+            +- 'Filter ('k.cou >= scalar-subquery#48 [])
+               :  +- 'SubqueryAlias scalar-subquery#48 []
+               :     +- 'Aggregate ['n.IDb], [unresolvedalias('max('n.cou), None)]
+               :        +- 'UnresolvedRelation `knn`, n
+               +- 'UnresolvedRelation `knn`, k
+
+== Analyzed Logical Plan ==
+ID: int, L: string, M: string
+Project [ID#10, L#41, M#13]
++- Filter (IDb#40 = ID#10)
+   +- Join Inner
+      :- SubqueryAlias rc
+      :  +- LogicalRDD [ID#10, C#11, D#12, M#13]
+      +- SubqueryAlias final
+         +- Project [IDb#40, L#41]
+            +- Filter (cou#42L >= scalar-subquery#48 [])
+               :  +- SubqueryAlias scalar-subquery#48 []
+               :     +- Aggregate [IDb#40], [max(cou#42L) AS _c0#50L]
+               :        +- SubqueryAlias n
+               :           +- SubqueryAlias knn
+               :              +- LogicalRDD [IDb#40, L#41, cou#42L]
+               +- SubqueryAlias k
+                  +- SubqueryAlias knn
+                     +- LogicalRDD [IDb#40, L#41, cou#42L]
+
+== Optimized Logical Plan ==
+Project [ID#10, L#41, M#13]
++- Join Inner, (IDb#40 = ID#10)
+   :- LogicalRDD [ID#10, C#11, D#12, M#13]
+   +- Project [IDb#40, L#41]
+      +- Filter (cou#42L >= scalar-subquery#48 [])
+         :  +- SubqueryAlias scalar-subquery#48 []
+         :     +- Aggregate [IDb#40], [max(cou#42L) AS _c0#50L]
+         :        +- LogicalRDD [IDb#40, L#41, cou#42L]
+         +- LogicalRDD [IDb#40, L#41, cou#42L]
+
+== Physical Plan ==
+*Project [ID#10, L#41, M#13]
++- ShuffledHashJoin [ID#10], [IDb#40], Inner, BuildRight
+   :- Exchange hashpartitioning(ID#10, 3)
+   :  +- Scan ExistingRDD[ID#10,C#11,D#12,M#13]
+   +- Exchange hashpartitioning(IDb#40, 3)
+      +- *Project [IDb#40, L#41]
+         +- *Filter (cou#42L >= subquery#48)
+            :  +- Subquery subquery#48
+            :     +- *HashAggregate(keys=[IDb#40], functions=[max(cou#42L)], output=[_c0#50L])
+            :        +- Exchange hashpartitioning(IDb#40, 3)
+            :           +- *HashAggregate(keys=[IDb#40], functions=[partial_max(cou#42L)], output=[IDb#40, max#52L])
+            :              +- Scan ExistingRDD[IDb#40,L#41,cou#42L]
+            +- Scan ExistingRDD[IDb#40,L#41,cou#42L]
+
+
+====== 12/12 22:56:24 tc_ll/arc=arc/rc=rc1/codegen=true/partitions=3/joinType=ShuffleHashJoin/fixpointTask=false/output=query/test_out/startvertex=1/log=error ======
+
+Load: 2767 ms
+
+RamSQL Parse: 200 ms
+CREATE VIEW knn(IDb, L, cou) AS
+select IDb, L, count(IDa) as cou
+from (
+select IDa, IDb, distance, L, rank() over(partition by IDb order by distance) as rank
+from (
+select arc.ID AS IDa, rc.ID as IDb, (A-C)*(A-C) + (B-D)*(B-D) AS distance, L
+from arc, rc
+) as merge
+) as total
+where rank <= 3
+group by IDb, L
+[Success - View Created] knn(IDb: integer, L: string, cou: long)
+
+RamSQL Parse: 22 ms
+select k.IDb, k.L
+from knn k
+where k.cou >= ( select max(n.cou) from knn n group by n.IDb)
+
+== Parsed Logical Plan ==
+'Project ['k.IDb, 'k.L]
++- 'Filter ('k.cou >= scalar-subquery#48 [])
+   :  +- 'SubqueryAlias scalar-subquery#48 []
+   :     +- 'Aggregate ['n.IDb], [unresolvedalias('max('n.cou), None)]
+   :        +- 'UnresolvedRelation `knn`, n
+   +- 'UnresolvedRelation `knn`, k
+
+== Analyzed Logical Plan ==
+IDb: int, L: string
+Project [IDb#40, L#41]
++- Filter (cou#42L >= scalar-subquery#48 [])
+   :  +- SubqueryAlias scalar-subquery#48 []
+   :     +- Aggregate [IDb#40], [max(cou#42L) AS _c0#50L]
+   :        +- SubqueryAlias n
+   :           +- SubqueryAlias knn
+   :              +- LogicalRDD [IDb#40, L#41, cou#42L]
+   +- SubqueryAlias k
+      +- SubqueryAlias knn
+         +- LogicalRDD [IDb#40, L#41, cou#42L]
+
+== Optimized Logical Plan ==
+Project [IDb#40, L#41]
++- Filter (cou#42L >= scalar-subquery#48 [])
+   :  +- SubqueryAlias scalar-subquery#48 []
+   :     +- Aggregate [IDb#40], [max(cou#42L) AS _c0#50L]
+   :        +- LogicalRDD [IDb#40, L#41, cou#42L]
+   +- LogicalRDD [IDb#40, L#41, cou#42L]
+
+== Physical Plan ==
+*Project [IDb#40, L#41]
++- *Filter (cou#42L >= subquery#48)
+   :  +- Subquery subquery#48
+   :     +- *HashAggregate(keys=[IDb#40], functions=[max(cou#42L)], output=[_c0#50L])
+   :        +- Exchange hashpartitioning(IDb#40, 3)
+   :           +- *HashAggregate(keys=[IDb#40], functions=[partial_max(cou#42L)], output=[IDb#40, max#52L])
+   :              +- Scan ExistingRDD[IDb#40,L#41,cou#42L]
+   +- Scan ExistingRDD[IDb#40,L#41,cou#42L]
+
+
+====== 12/12 22:57:39 tc_ll/arc=arc/rc=rc1/codegen=true/partitions=3/joinType=ShuffleHashJoin/fixpointTask=false/output=query/test_out/startvertex=1/log=error ======
+
+Load: 2786 ms
+
+RamSQL Parse: 180 ms
+CREATE VIEW knn(IDb, L, cou) AS
+select IDb, L, count(IDa) as cou
+from (
+select IDa, IDb, distance, L, rank() over(partition by IDb order by distance) as rank
+from (
+select arc.ID AS IDa, rc.ID as IDb, (A-C)*(A-C) + (B-D)*(B-D) AS distance, L
+from arc, rc
+) as merge
+) as total
+where rank <= 3
+group by IDb, L
+[Success - View Created] knn(IDb: integer, L: string, cou: long)
+
+RamSQL Parse: 17 ms
+select k.IDb, k.L
+from knn k
+where k.cou >= ( select max(n.cou) from knn n where k.IDb = n.IDb)
+
+== Parsed Logical Plan ==
+'Project ['k.IDb, 'k.L]
++- 'Filter ('k.cou >= scalar-subquery#48 [])
+   :  +- 'SubqueryAlias scalar-subquery#48 []
+   :     +- 'Project [unresolvedalias('max('n.cou), None)]
+   :        +- 'Filter ('k.IDb = 'n.IDb)
+   :           +- 'UnresolvedRelation `knn`, n
+   +- 'UnresolvedRelation `knn`, k
+
+== Analyzed Logical Plan ==
+IDb: int, L: string
+Project [IDb#40, L#41]
++- Filter (cou#42L >= scalar-subquery#48 [(IDb#40 = IDb#40#51)])
+   :  +- SubqueryAlias scalar-subquery#48 [(IDb#40 = IDb#40#51)]
+   :     +- Project [_c0#50L, IDb#40 AS IDb#40#51]
+   :        +- Aggregate [IDb#40], [max(cou#42L) AS _c0#50L, IDb#40]
+   :           +- SubqueryAlias n
+   :              +- SubqueryAlias knn
+   :                 +- LogicalRDD [IDb#40, L#41, cou#42L]
+   +- SubqueryAlias k
+      +- SubqueryAlias knn
+         +- LogicalRDD [IDb#40, L#41, cou#42L]
+
+== Optimized Logical Plan ==
+Project [IDb#40, L#41]
++- Join Inner, ((cou#42L >= _c0#50L) && (IDb#40 = IDb#40#51))
+   :- LogicalRDD [IDb#40, L#41, cou#42L]
+   +- Aggregate [IDb#40], [max(cou#42L) AS _c0#50L, IDb#40 AS IDb#40#51]
+      +- LogicalRDD [IDb#40, L#41, cou#42L]
+
+== Physical Plan ==
+*Project [IDb#40, L#41]
++- ShuffledHashJoin [IDb#40], [IDb#40#51], Inner, BuildRight, (cou#42L >= _c0#50L)
+   :- Exchange hashpartitioning(IDb#40, 3)
+   :  +- Scan ExistingRDD[IDb#40,L#41,cou#42L]
+   +- Exchange hashpartitioning(IDb#40#51, 3)
+      +- *HashAggregate(keys=[IDb#40], functions=[max(cou#42L)], output=[_c0#50L, IDb#40#51])
+         +- Exchange hashpartitioning(IDb#40, 3)
+            +- *HashAggregate(keys=[IDb#40], functions=[partial_max(cou#42L)], output=[IDb#40, max#53L])
+               +- Scan ExistingRDD[IDb#40,L#41,cou#42L]
+
+[Success - Execution Finished]
+Compile RamSQL: 310 ms
+Execution (Collect): 3208 ms
+Total: 6332 ms
+Result Size: 2
+
+====== 12/12 22:59:00 tc_ll/arc=arc/rc=rc1/codegen=true/partitions=3/joinType=ShuffleHashJoin/fixpointTask=false/output=query/test_out/startvertex=1/log=error ======
+
+Load: 2615 ms
+
+RamSQL Parse: 195 ms
+CREATE VIEW knn(IDb, L, cou) AS
+select IDb, L, count(IDa) as cou
+from (
+select IDa, IDb, distance, L, rank() over(partition by IDb order by distance) as rank
+from (
+select arc.ID AS IDa, rc.ID as IDb, (A-C)*(A-C) + (B-D)*(B-D) AS distance, L
+from arc, rc
+) as merge
+) as total
+where rank <= 3
+group by IDb, L
+[Success - View Created] knn(IDb: integer, L: string, cou: long)
+
+RamSQL Parse: 38 ms
+SELECT ID, L, M
+from rc,
+(
+select k.IDb, k.L
+from knn k
+where k.cou >= ( select max(n.cou) from knn n where k.IDb = n.IDb)
+) as final
+where final.IDb = rc.ID
+
+== Parsed Logical Plan ==
+'Project ['ID, 'L, 'M]
++- 'Filter ('final.IDb = 'rc.ID)
+   +- 'Join Inner
+      :- 'UnresolvedRelation `rc`
+      +- 'SubqueryAlias final
+         +- 'Project ['k.IDb, 'k.L]
+            +- 'Filter ('k.cou >= scalar-subquery#48 [])
+               :  +- 'SubqueryAlias scalar-subquery#48 []
+               :     +- 'Project [unresolvedalias('max('n.cou), None)]
+               :        +- 'Filter ('k.IDb = 'n.IDb)
+               :           +- 'UnresolvedRelation `knn`, n
+               +- 'UnresolvedRelation `knn`, k
+
+== Analyzed Logical Plan ==
+ID: int, L: string, M: string
+Project [ID#10, L#41, M#13]
++- Filter (IDb#40 = ID#10)
+   +- Join Inner
+      :- SubqueryAlias rc
+      :  +- LogicalRDD [ID#10, C#11, D#12, M#13]
+      +- SubqueryAlias final
+         +- Project [IDb#40, L#41]
+            +- Filter (cou#42L >= scalar-subquery#48 [(IDb#40 = IDb#40#51)])
+               :  +- SubqueryAlias scalar-subquery#48 [(IDb#40 = IDb#40#51)]
+               :     +- Project [_c0#50L, IDb#40 AS IDb#40#51]
+               :        +- Aggregate [IDb#40], [max(cou#42L) AS _c0#50L, IDb#40]
+               :           +- SubqueryAlias n
+               :              +- SubqueryAlias knn
+               :                 +- LogicalRDD [IDb#40, L#41, cou#42L]
+               +- SubqueryAlias k
+                  +- SubqueryAlias knn
+                     +- LogicalRDD [IDb#40, L#41, cou#42L]
+
+== Optimized Logical Plan ==
+Project [ID#10, L#41, M#13]
++- Join Inner, (IDb#40 = ID#10)
+   :- LogicalRDD [ID#10, C#11, D#12, M#13]
+   +- Project [IDb#40, L#41]
+      +- Join Inner, ((cou#42L >= _c0#50L) && (IDb#40 = IDb#40#51))
+         :- LogicalRDD [IDb#40, L#41, cou#42L]
+         +- Aggregate [IDb#40], [max(cou#42L) AS _c0#50L, IDb#40 AS IDb#40#51]
+            +- LogicalRDD [IDb#40, L#41, cou#42L]
+
+== Physical Plan ==
+*Project [ID#10, L#41, M#13]
++- ShuffledHashJoin [ID#10], [IDb#40], Inner, BuildRight
+   :- Exchange hashpartitioning(ID#10, 3)
+   :  +- Scan ExistingRDD[ID#10,C#11,D#12,M#13]
+   +- *Project [IDb#40, L#41]
+      +- ShuffledHashJoin [IDb#40], [IDb#40#51], Inner, BuildRight, (cou#42L >= _c0#50L)
+         :- Exchange hashpartitioning(IDb#40, 3)
+         :  +- Scan ExistingRDD[IDb#40,L#41,cou#42L]
+         +- Exchange hashpartitioning(IDb#40#51, 3)
+            +- *HashAggregate(keys=[IDb#40], functions=[max(cou#42L)], output=[_c0#50L, IDb#40#51])
+               +- Exchange hashpartitioning(IDb#40, 3)
+                  +- *HashAggregate(keys=[IDb#40], functions=[partial_max(cou#42L)], output=[IDb#40, max#53L])
+                     +- Scan ExistingRDD[IDb#40,L#41,cou#42L]
+
+[Success - Execution Finished]
+Compile RamSQL: 381 ms
+Execution (Collect): 3151 ms
+Total: 6181 ms
+Result Size: 2
+
+====== 12/12 23:04:20 tc_ll/arc=arc/rc=rc1/codegen=true/partitions=3/joinType=ShuffleHashJoin/fixpointTask=false/output=query/test_out/startvertex=1/log=error ======
+
+Load: 7426 ms
+
+RamSQL Parse: 291 ms
+CREATE VIEW knn(IDb, L, cou) AS
+select IDb, L, count(IDa) as cou
+from (
+select IDa, IDb, distance, L, rank() over(partition by IDb order by distance) as rank
+from (
+select arc.ID AS IDa, rc.ID as IDb, (A-C)*(A-C) + (B-D)*(B-D) AS distance, L
+from arc, rc
+) as merge
+) as total
+where rank <= 3
+group by IDb, L
+[Success - View Created] knn(IDb: integer, L: string, cou: long)
+
+RamSQL Parse: 39 ms
+SELECT ID, L, M
+from rc,
+(
+select k.IDb, k.L
+from knn k
+where k.cou >= ( select max(n.cou) from knn n where k.IDb = n.IDb)
+) as final
+where final.IDb = rc.ID
+
+== Parsed Logical Plan ==
+'Project ['ID, 'L, 'M]
++- 'Filter ('final.IDb = 'rc.ID)
+   +- 'Join Inner
+      :- 'UnresolvedRelation `rc`
+      +- 'SubqueryAlias final
+         +- 'Project ['k.IDb, 'k.L]
+            +- 'Filter ('k.cou >= scalar-subquery#48 [])
+               :  +- 'SubqueryAlias scalar-subquery#48 []
+               :     +- 'Project [unresolvedalias('max('n.cou), None)]
+               :        +- 'Filter ('k.IDb = 'n.IDb)
+               :           +- 'UnresolvedRelation `knn`, n
+               +- 'UnresolvedRelation `knn`, k
+
+== Analyzed Logical Plan ==
+ID: int, L: string, M: string
+Project [ID#10, L#41, M#13]
++- Filter (IDb#40 = ID#10)
+   +- Join Inner
+      :- SubqueryAlias rc
+      :  +- LogicalRDD [ID#10, C#11, D#12, M#13]
+      +- SubqueryAlias final
+         +- Project [IDb#40, L#41]
+            +- Filter (cou#42L >= scalar-subquery#48 [(IDb#40 = IDb#40#51)])
+               :  +- SubqueryAlias scalar-subquery#48 [(IDb#40 = IDb#40#51)]
+               :     +- Project [_c0#50L, IDb#40 AS IDb#40#51]
+               :        +- Aggregate [IDb#40], [max(cou#42L) AS _c0#50L, IDb#40]
+               :           +- SubqueryAlias n
+               :              +- SubqueryAlias knn
+               :                 +- LogicalRDD [IDb#40, L#41, cou#42L]
+               +- SubqueryAlias k
+                  +- SubqueryAlias knn
+                     +- LogicalRDD [IDb#40, L#41, cou#42L]
+
+== Optimized Logical Plan ==
+Project [ID#10, L#41, M#13]
++- Join Inner, (IDb#40 = ID#10)
+   :- LogicalRDD [ID#10, C#11, D#12, M#13]
+   +- Project [IDb#40, L#41]
+      +- Join Inner, ((cou#42L >= _c0#50L) && (IDb#40 = IDb#40#51))
+         :- LogicalRDD [IDb#40, L#41, cou#42L]
+         +- Aggregate [IDb#40], [max(cou#42L) AS _c0#50L, IDb#40 AS IDb#40#51]
+            +- LogicalRDD [IDb#40, L#41, cou#42L]
+
+== Physical Plan ==
+*Project [ID#10, L#41, M#13]
++- ShuffledHashJoin [ID#10], [IDb#40], Inner, BuildRight
+   :- Exchange hashpartitioning(ID#10, 3)
+   :  +- Scan ExistingRDD[ID#10,C#11,D#12,M#13]
+   +- *Project [IDb#40, L#41]
+      +- ShuffledHashJoin [IDb#40], [IDb#40#51], Inner, BuildRight, (cou#42L >= _c0#50L)
+         :- Exchange hashpartitioning(IDb#40, 3)
+         :  +- Scan ExistingRDD[IDb#40,L#41,cou#42L]
+         +- Exchange hashpartitioning(IDb#40#51, 3)
+            +- *HashAggregate(keys=[IDb#40], functions=[max(cou#42L)], output=[_c0#50L, IDb#40#51])
+               +- Exchange hashpartitioning(IDb#40, 3)
+                  +- *HashAggregate(keys=[IDb#40], functions=[partial_max(cou#42L)], output=[IDb#40, max#53L])
+                     +- Scan ExistingRDD[IDb#40,L#41,cou#42L]
+
+
+====== 12/12 23:07:37 tc_ll/arc=arc/rc=rc1/codegen=true/partitions=3/joinType=ShuffleHashJoin/fixpointTask=false/output=query/test_out/startvertex=1/log=error ======
+
+Load: 7434 ms
+
+RamSQL Parse: 304 ms
+CREATE VIEW knn(IDb, L, cou) AS
+select IDb, L, count(IDa) as cou
+from (
+select IDa, IDb, distance, L, rank() over(partition by IDb order by distance) as rank
+from (
+select arc.ID AS IDa, rc.ID as IDb, (A-C)*(A-C) + (B-D)*(B-D) AS distance, L
+from arc, rc
+) as merge
+) as total
+where rank <= 3
+group by IDb, L
+[Success - View Created] knn(IDb: integer, L: string, cou: long)
+
+RamSQL Parse: 39 ms
+SELECT ID, L, M
+from rc,
+(
+select k.IDb, k.L
+from knn k
+where k.cou >= ( select max(n.cou) from knn n where k.IDb = n.IDb)
+) as final
+where final.IDb = rc.ID
+
+== Parsed Logical Plan ==
+'Project ['ID, 'L, 'M]
++- 'Filter ('final.IDb = 'rc.ID)
+   +- 'Join Inner
+      :- 'UnresolvedRelation `rc`
+      +- 'SubqueryAlias final
+         +- 'Project ['k.IDb, 'k.L]
+            +- 'Filter ('k.cou >= scalar-subquery#48 [])
+               :  +- 'SubqueryAlias scalar-subquery#48 []
+               :     +- 'Project [unresolvedalias('max('n.cou), None)]
+               :        +- 'Filter ('k.IDb = 'n.IDb)
+               :           +- 'UnresolvedRelation `knn`, n
+               +- 'UnresolvedRelation `knn`, k
+
+== Analyzed Logical Plan ==
+ID: int, L: string, M: string
+Project [ID#10, L#41, M#13]
++- Filter (IDb#40 = ID#10)
+   +- Join Inner
+      :- SubqueryAlias rc
+      :  +- LogicalRDD [ID#10, C#11, D#12, M#13]
+      +- SubqueryAlias final
+         +- Project [IDb#40, L#41]
+            +- Filter (cou#42L >= scalar-subquery#48 [(IDb#40 = IDb#40#51)])
+               :  +- SubqueryAlias scalar-subquery#48 [(IDb#40 = IDb#40#51)]
+               :     +- Project [_c0#50L, IDb#40 AS IDb#40#51]
+               :        +- Aggregate [IDb#40], [max(cou#42L) AS _c0#50L, IDb#40]
+               :           +- SubqueryAlias n
+               :              +- SubqueryAlias knn
+               :                 +- LogicalRDD [IDb#40, L#41, cou#42L]
+               +- SubqueryAlias k
+                  +- SubqueryAlias knn
+                     +- LogicalRDD [IDb#40, L#41, cou#42L]
+
+== Optimized Logical Plan ==
+Project [ID#10, L#41, M#13]
++- Join Inner, (IDb#40 = ID#10)
+   :- LogicalRDD [ID#10, C#11, D#12, M#13]
+   +- Project [IDb#40, L#41]
+      +- Join Inner, ((cou#42L >= _c0#50L) && (IDb#40 = IDb#40#51))
+         :- LogicalRDD [IDb#40, L#41, cou#42L]
+         +- Aggregate [IDb#40], [max(cou#42L) AS _c0#50L, IDb#40 AS IDb#40#51]
+            +- LogicalRDD [IDb#40, L#41, cou#42L]
+
+== Physical Plan ==
+*Project [ID#10, L#41, M#13]
++- ShuffledHashJoin [ID#10], [IDb#40], Inner, BuildRight
+   :- Exchange hashpartitioning(ID#10, 3)
+   :  +- Scan ExistingRDD[ID#10,C#11,D#12,M#13]
+   +- *Project [IDb#40, L#41]
+      +- ShuffledHashJoin [IDb#40], [IDb#40#51], Inner, BuildRight, (cou#42L >= _c0#50L)
+         :- Exchange hashpartitioning(IDb#40, 3)
+         :  +- Scan ExistingRDD[IDb#40,L#41,cou#42L]
+         +- Exchange hashpartitioning(IDb#40#51, 3)
+            +- *HashAggregate(keys=[IDb#40], functions=[max(cou#42L)], output=[_c0#50L, IDb#40#51])
+               +- Exchange hashpartitioning(IDb#40, 3)
+                  +- *HashAggregate(keys=[IDb#40], functions=[partial_max(cou#42L)], output=[IDb#40, max#53L])
+                     +- Scan ExistingRDD[IDb#40,L#41,cou#42L]
+
+
+====== 12/12 23:11:28 tc_ll/arc=arc/rc=rc1/codegen=true/partitions=3/joinType=ShuffleHashJoin/fixpointTask=false/output=query/test_out/startvertex=1/log=error ======
+
+Load: 2651 ms
+
+RamSQL Parse: 187 ms
+CREATE VIEW knn(IDb, L, cou) AS
+select IDb, L, count(IDa) as cou
+from (
+select IDa, IDb, distance, L, rank() over(partition by IDb order by distance) as rank
+from (
+select arc.ID AS IDa, rc.ID as IDb, (A-C)*(A-C) + (B-D)*(B-D) AS distance, L
+from arc, rc
+) as merge
+) as total
+where rank <= 3
+group by IDb, L
+[Success - View Created] knn(IDb: integer, L: string, cou: long)
+
+RamSQL Parse: 44 ms
+SELECT ID, L, M
+from rc,
+(
+select k.IDb, k.L
+from knn k
+where k.cou >= ( select max(n.cou) from knn n where k.IDb = n.IDb)
+) as final
+where final.IDb = rc.ID
+
+== Parsed Logical Plan ==
+'Project ['ID, 'L, 'M]
++- 'Filter ('final.IDb = 'rc.ID)
+   +- 'Join Inner
+      :- 'UnresolvedRelation `rc`
+      +- 'SubqueryAlias final
+         +- 'Project ['k.IDb, 'k.L]
+            +- 'Filter ('k.cou >= scalar-subquery#48 [])
+               :  +- 'SubqueryAlias scalar-subquery#48 []
+               :     +- 'Project [unresolvedalias('max('n.cou), None)]
+               :        +- 'Filter ('k.IDb = 'n.IDb)
+               :           +- 'UnresolvedRelation `knn`, n
+               +- 'UnresolvedRelation `knn`, k
+
+== Analyzed Logical Plan ==
+ID: int, L: string, M: string
+Project [ID#10, L#41, M#13]
++- Filter (IDb#40 = ID#10)
+   +- Join Inner
+      :- SubqueryAlias rc
+      :  +- LogicalRDD [ID#10, C#11, D#12, M#13]
+      +- SubqueryAlias final
+         +- Project [IDb#40, L#41]
+            +- Filter (cou#42L >= scalar-subquery#48 [(IDb#40 = IDb#40#51)])
+               :  +- SubqueryAlias scalar-subquery#48 [(IDb#40 = IDb#40#51)]
+               :     +- Project [_c0#50L, IDb#40 AS IDb#40#51]
+               :        +- Aggregate [IDb#40], [max(cou#42L) AS _c0#50L, IDb#40]
+               :           +- SubqueryAlias n
+               :              +- SubqueryAlias knn
+               :                 +- LogicalRDD [IDb#40, L#41, cou#42L]
+               +- SubqueryAlias k
+                  +- SubqueryAlias knn
+                     +- LogicalRDD [IDb#40, L#41, cou#42L]
+
+== Optimized Logical Plan ==
+Project [ID#10, L#41, M#13]
++- Join Inner, (IDb#40 = ID#10)
+   :- LogicalRDD [ID#10, C#11, D#12, M#13]
+   +- Project [IDb#40, L#41]
+      +- Join Inner, ((cou#42L >= _c0#50L) && (IDb#40 = IDb#40#51))
+         :- LogicalRDD [IDb#40, L#41, cou#42L]
+         +- Aggregate [IDb#40], [max(cou#42L) AS _c0#50L, IDb#40 AS IDb#40#51]
+            +- LogicalRDD [IDb#40, L#41, cou#42L]
+
+== Physical Plan ==
+*Project [ID#10, L#41, M#13]
++- ShuffledHashJoin [ID#10], [IDb#40], Inner, BuildRight
+   :- Exchange hashpartitioning(ID#10, 3)
+   :  +- Scan ExistingRDD[ID#10,C#11,D#12,M#13]
+   +- *Project [IDb#40, L#41]
+      +- ShuffledHashJoin [IDb#40], [IDb#40#51], Inner, BuildRight, (cou#42L >= _c0#50L)
+         :- Exchange hashpartitioning(IDb#40, 3)
+         :  +- Scan ExistingRDD[IDb#40,L#41,cou#42L]
+         +- Exchange hashpartitioning(IDb#40#51, 3)
+            +- *HashAggregate(keys=[IDb#40], functions=[max(cou#42L)], output=[_c0#50L, IDb#40#51])
+               +- Exchange hashpartitioning(IDb#40, 3)
+                  +- *HashAggregate(keys=[IDb#40], functions=[partial_max(cou#42L)], output=[IDb#40, max#53L])
+                     +- Scan ExistingRDD[IDb#40,L#41,cou#42L]
+
+
+====== 12/12 23:14:22 tc_ll/arc=arc/rc=rc1/codegen=true/partitions=3/joinType=ShuffleHashJoin/fixpointTask=false/output=query/test_out/startvertex=1/log=error ======
+
+Load: 2767 ms
+
+RamSQL Parse: 179 ms
+CREATE VIEW knn(IDb, L, cou) AS
+select IDb, L, count(IDa) as cou
+from (
+select IDa, IDb, distance, L, rank() over(partition by IDb order by distance) as rank
+from (
+select arc.ID AS IDa, rc.ID as IDb, (A-C)*(A-C) + (B-D)*(B-D) AS distance, L
+from arc, rc
+) as merge
+) as total
+where rank <= 3
+group by IDb, L
+[Success - View Created] knn(IDb: integer, L: string, cou: long)
+
+RamSQL Parse: 38 ms
+SELECT ID, L, M
+from rc,
+(
+select k.IDb, k.L
+from knn k
+where k.cou >= ( select max(n.cou) from knn n where k.IDb = n.IDb)
+) as final
+where final.IDb = rc.ID
+
+== Parsed Logical Plan ==
+'Project ['ID, 'L, 'M]
++- 'Filter ('final.IDb = 'rc.ID)
+   +- 'Join Inner
+      :- 'UnresolvedRelation `rc`
+      +- 'SubqueryAlias final
+         +- 'Project ['k.IDb, 'k.L]
+            +- 'Filter ('k.cou >= scalar-subquery#48 [])
+               :  +- 'SubqueryAlias scalar-subquery#48 []
+               :     +- 'Project [unresolvedalias('max('n.cou), None)]
+               :        +- 'Filter ('k.IDb = 'n.IDb)
+               :           +- 'UnresolvedRelation `knn`, n
+               +- 'UnresolvedRelation `knn`, k
+
+== Analyzed Logical Plan ==
+ID: int, L: string, M: string
+Project [ID#10, L#41, M#13]
++- Filter (IDb#40 = ID#10)
+   +- Join Inner
+      :- SubqueryAlias rc
+      :  +- LogicalRDD [ID#10, C#11, D#12, M#13]
+      +- SubqueryAlias final
+         +- Project [IDb#40, L#41]
+            +- Filter (cou#42L >= scalar-subquery#48 [(IDb#40 = IDb#40#51)])
+               :  +- SubqueryAlias scalar-subquery#48 [(IDb#40 = IDb#40#51)]
+               :     +- Project [_c0#50L, IDb#40 AS IDb#40#51]
+               :        +- Aggregate [IDb#40], [max(cou#42L) AS _c0#50L, IDb#40]
+               :           +- SubqueryAlias n
+               :              +- SubqueryAlias knn
+               :                 +- LogicalRDD [IDb#40, L#41, cou#42L]
+               +- SubqueryAlias k
+                  +- SubqueryAlias knn
+                     +- LogicalRDD [IDb#40, L#41, cou#42L]
+
+== Optimized Logical Plan ==
+Project [ID#10, L#41, M#13]
++- Join Inner, (IDb#40 = ID#10)
+   :- LogicalRDD [ID#10, C#11, D#12, M#13]
+   +- Project [IDb#40, L#41]
+      +- Join Inner, ((cou#42L >= _c0#50L) && (IDb#40 = IDb#40#51))
+         :- LogicalRDD [IDb#40, L#41, cou#42L]
+         +- Aggregate [IDb#40], [max(cou#42L) AS _c0#50L, IDb#40 AS IDb#40#51]
+            +- LogicalRDD [IDb#40, L#41, cou#42L]
+
+== Physical Plan ==
+*Project [ID#10, L#41, M#13]
++- ShuffledHashJoin [ID#10], [IDb#40], Inner, BuildRight
+   :- Exchange hashpartitioning(ID#10, 3)
+   :  +- Scan ExistingRDD[ID#10,C#11,D#12,M#13]
+   +- *Project [IDb#40, L#41]
+      +- ShuffledHashJoin [IDb#40], [IDb#40#51], Inner, BuildRight, (cou#42L >= _c0#50L)
+         :- Exchange hashpartitioning(IDb#40, 3)
+         :  +- Scan ExistingRDD[IDb#40,L#41,cou#42L]
+         +- Exchange hashpartitioning(IDb#40#51, 3)
+            +- *HashAggregate(keys=[IDb#40], functions=[max(cou#42L)], output=[_c0#50L, IDb#40#51])
+               +- Exchange hashpartitioning(IDb#40, 3)
+                  +- *HashAggregate(keys=[IDb#40], functions=[partial_max(cou#42L)], output=[IDb#40, max#53L])
+                     +- Scan ExistingRDD[IDb#40,L#41,cou#42L]
+
+
+====== 12/12 23:16:27 tc_ll/arc=arc/rc=rc1/codegen=true/partitions=3/joinType=ShuffleHashJoin/fixpointTask=false/output=query/test_out/startvertex=1/log=error ======
+
+Load: 3339 ms
+Compile RamSQL: 0 ms
+Execution (Collect): 0 ms
+Total: 3342 ms
+Result Size: 0
+
+====== 12/12 23:17:06 tc_ll/arc=arc/rc=rc1/codegen=true/partitions=3/joinType=ShuffleHashJoin/fixpointTask=false/output=query/test_out/startvertex=1/log=error ======
+
+Load: 2543 ms
+
+RamSQL Parse: 63 ms
+select * from rc limit 10
+
+== Parsed Logical Plan ==
+'GlobalLimit 10
++- 'LocalLimit 10
+   +- 'Project [*]
+      +- 'UnresolvedRelation `rc`
+
+== Analyzed Logical Plan ==
+ID: int, C: float, D: float, M: string
+GlobalLimit 10
++- LocalLimit 10
+   +- Project [ID#10, C#11, D#12, M#13]
+      +- SubqueryAlias rc
+         +- LogicalRDD [ID#10, C#11, D#12, M#13]
+
+== Optimized Logical Plan ==
+GlobalLimit 10
++- LocalLimit 10
+   +- Project [ID#10, C#11, D#12, M#13]
+      +- LogicalRDD [ID#10, C#11, D#12, M#13]
+
+== Physical Plan ==
+CollectLimit 10
++- *Project [ID#10, C#11, D#12, M#13]
+   +- Scan ExistingRDD[ID#10,C#11,D#12,M#13]
+
+
+====== 12/12 23:23:32 tc_ll/arc=arc/rc=rc1/codegen=true/partitions=3/joinType=ShuffleHashJoin/fixpointTask=false/output=query/test_out/startvertex=1/log=error ======
+
+Load: 7375 ms
+
+RamSQL Parse: 287 ms
+CREATE VIEW knn(IDb, L, cou) AS
+select IDb, L, count(IDa) as cou
+from (
+select IDa, IDb, distance, L, rank() over(partition by IDb order by distance) as rank
+from (
+select arc.ID AS IDa, rc.ID as IDb, (A-C)*(A-C) + (B-D)*(B-D) AS distance, L
+from arc, rc
+) as merge
+) as total
+where rank <= 3
+group by IDb, L
+[Success - View Created] knn(IDb: integer, L: string, cou: long)
+
+RamSQL Parse: 36 ms
+SELECT ID, L, M
+from rc,
+(
+select k.IDb, k.L
+from knn k
+where k.cou >= ( select max(n.cou) from knn n where k.IDb = n.IDb)
+) as final
+where final.IDb = rc.ID
+
+== Parsed Logical Plan ==
+'Project ['ID, 'L, 'M]
++- 'Filter ('final.IDb = 'rc.ID)
+   +- 'Join Inner
+      :- 'UnresolvedRelation `rc`
+      +- 'SubqueryAlias final
+         +- 'Project ['k.IDb, 'k.L]
+            +- 'Filter ('k.cou >= scalar-subquery#48 [])
+               :  +- 'SubqueryAlias scalar-subquery#48 []
+               :     +- 'Project [unresolvedalias('max('n.cou), None)]
+               :        +- 'Filter ('k.IDb = 'n.IDb)
+               :           +- 'UnresolvedRelation `knn`, n
+               +- 'UnresolvedRelation `knn`, k
+
+== Analyzed Logical Plan ==
+ID: int, L: string, M: string
+Project [ID#10, L#41, M#13]
++- Filter (IDb#40 = ID#10)
+   +- Join Inner
+      :- SubqueryAlias rc
+      :  +- LogicalRDD [ID#10, C#11, D#12, M#13]
+      +- SubqueryAlias final
+         +- Project [IDb#40, L#41]
+            +- Filter (cou#42L >= scalar-subquery#48 [(IDb#40 = IDb#40#51)])
+               :  +- SubqueryAlias scalar-subquery#48 [(IDb#40 = IDb#40#51)]
+               :     +- Project [_c0#50L, IDb#40 AS IDb#40#51]
+               :        +- Aggregate [IDb#40], [max(cou#42L) AS _c0#50L, IDb#40]
+               :           +- SubqueryAlias n
+               :              +- SubqueryAlias knn
+               :                 +- LogicalRDD [IDb#40, L#41, cou#42L]
+               +- SubqueryAlias k
+                  +- SubqueryAlias knn
+                     +- LogicalRDD [IDb#40, L#41, cou#42L]
+
+== Optimized Logical Plan ==
+Project [ID#10, L#41, M#13]
++- Join Inner, (IDb#40 = ID#10)
+   :- LogicalRDD [ID#10, C#11, D#12, M#13]
+   +- Project [IDb#40, L#41]
+      +- Join Inner, ((cou#42L >= _c0#50L) && (IDb#40 = IDb#40#51))
+         :- LogicalRDD [IDb#40, L#41, cou#42L]
+         +- Aggregate [IDb#40], [max(cou#42L) AS _c0#50L, IDb#40 AS IDb#40#51]
+            +- LogicalRDD [IDb#40, L#41, cou#42L]
+
+== Physical Plan ==
+*Project [ID#10, L#41, M#13]
++- ShuffledHashJoin [ID#10], [IDb#40], Inner, BuildRight
+   :- Exchange hashpartitioning(ID#10, 3)
+   :  +- Scan ExistingRDD[ID#10,C#11,D#12,M#13]
+   +- *Project [IDb#40, L#41]
+      +- ShuffledHashJoin [IDb#40], [IDb#40#51], Inner, BuildRight, (cou#42L >= _c0#50L)
+         :- Exchange hashpartitioning(IDb#40, 3)
+         :  +- Scan ExistingRDD[IDb#40,L#41,cou#42L]
+         +- Exchange hashpartitioning(IDb#40#51, 3)
+            +- *HashAggregate(keys=[IDb#40], functions=[max(cou#42L)], output=[_c0#50L, IDb#40#51])
+               +- Exchange hashpartitioning(IDb#40, 3)
+                  +- *HashAggregate(keys=[IDb#40], functions=[partial_max(cou#42L)], output=[IDb#40, max#53L])
+                     +- Scan ExistingRDD[IDb#40,L#41,cou#42L]
+
+[Success - Execution Finished]
+Compile RamSQL: 521 ms
+Execution (Collect): 8617 ms
+Total: 16572 ms
+Result Size: 607
+
+====== 12/12 23:35:36 tc_ll/arc=arc/rc=rc1/codegen=true/partitions=3/joinType=ShuffleHashJoin/fixpointTask=false/output=query/test_out/startvertex=1/log=error ======
+
+Load: 7422 ms
+
+RamSQL Parse: 296 ms
+CREATE VIEW knn(IDb, L, cou) AS
+select IDb, L, count(IDa) as cou
+from (
+select IDa, IDb, distance, L, rank() over(partition by IDb order by distance) as rank
+from (
+select arc.ID AS IDa, rc.ID as IDb, (A-C)*(A-C) + (B-D)*(B-D) AS distance, L
+from arc, rc
+) as merge
+) as total
+where rank <= 10
+group by IDb, L
+[Success - View Created] knn(IDb: integer, L: string, cou: long)
+
+RamSQL Parse: 43 ms
+SELECT ID, L, M
+from rc,
+(
+select k.IDb, k.L
+from knn k
+where k.cou >= ( select max(n.cou) from knn n where k.IDb = n.IDb)
+) as final
+where final.IDb = rc.ID
+
+== Parsed Logical Plan ==
+'Project ['ID, 'L, 'M]
++- 'Filter ('final.IDb = 'rc.ID)
+   +- 'Join Inner
+      :- 'UnresolvedRelation `rc`
+      +- 'SubqueryAlias final
+         +- 'Project ['k.IDb, 'k.L]
+            +- 'Filter ('k.cou >= scalar-subquery#48 [])
+               :  +- 'SubqueryAlias scalar-subquery#48 []
+               :     +- 'Project [unresolvedalias('max('n.cou), None)]
+               :        +- 'Filter ('k.IDb = 'n.IDb)
+               :           +- 'UnresolvedRelation `knn`, n
+               +- 'UnresolvedRelation `knn`, k
+
+== Analyzed Logical Plan ==
+ID: int, L: string, M: string
+Project [ID#10, L#41, M#13]
++- Filter (IDb#40 = ID#10)
+   +- Join Inner
+      :- SubqueryAlias rc
+      :  +- LogicalRDD [ID#10, C#11, D#12, M#13]
+      +- SubqueryAlias final
+         +- Project [IDb#40, L#41]
+            +- Filter (cou#42L >= scalar-subquery#48 [(IDb#40 = IDb#40#51)])
+               :  +- SubqueryAlias scalar-subquery#48 [(IDb#40 = IDb#40#51)]
+               :     +- Project [_c0#50L, IDb#40 AS IDb#40#51]
+               :        +- Aggregate [IDb#40], [max(cou#42L) AS _c0#50L, IDb#40]
+               :           +- SubqueryAlias n
+               :              +- SubqueryAlias knn
+               :                 +- LogicalRDD [IDb#40, L#41, cou#42L]
+               +- SubqueryAlias k
+                  +- SubqueryAlias knn
+                     +- LogicalRDD [IDb#40, L#41, cou#42L]
+
+== Optimized Logical Plan ==
+Project [ID#10, L#41, M#13]
++- Join Inner, (IDb#40 = ID#10)
+   :- LogicalRDD [ID#10, C#11, D#12, M#13]
+   +- Project [IDb#40, L#41]
+      +- Join Inner, ((cou#42L >= _c0#50L) && (IDb#40 = IDb#40#51))
+         :- LogicalRDD [IDb#40, L#41, cou#42L]
+         +- Aggregate [IDb#40], [max(cou#42L) AS _c0#50L, IDb#40 AS IDb#40#51]
+            +- LogicalRDD [IDb#40, L#41, cou#42L]
+
+== Physical Plan ==
+*Project [ID#10, L#41, M#13]
++- ShuffledHashJoin [ID#10], [IDb#40], Inner, BuildRight
+   :- Exchange hashpartitioning(ID#10, 3)
+   :  +- Scan ExistingRDD[ID#10,C#11,D#12,M#13]
+   +- *Project [IDb#40, L#41]
+      +- ShuffledHashJoin [IDb#40], [IDb#40#51], Inner, BuildRight, (cou#42L >= _c0#50L)
+         :- Exchange hashpartitioning(IDb#40, 3)
+         :  +- Scan ExistingRDD[IDb#40,L#41,cou#42L]
+         +- Exchange hashpartitioning(IDb#40#51, 3)
+            +- *HashAggregate(keys=[IDb#40], functions=[max(cou#42L)], output=[_c0#50L, IDb#40#51])
+               +- Exchange hashpartitioning(IDb#40, 3)
+                  +- *HashAggregate(keys=[IDb#40], functions=[partial_max(cou#42L)], output=[IDb#40, max#53L])
+                     +- Scan ExistingRDD[IDb#40,L#41,cou#42L]
+
+[Success - Execution Finished]
+Compile RamSQL: 551 ms
+Execution (Collect): 7893 ms
+Total: 15922 ms
+Result Size: 745
+
+====== 12/12 23:36:27 tc_ll/arc=arc/rc=rc1/codegen=true/partitions=3/joinType=ShuffleHashJoin/fixpointTask=false/output=query/test_out/startvertex=1/log=error ======
+
+Load: 2582 ms
+
+RamSQL Parse: 184 ms
+CREATE VIEW knn(IDb, L, cou) AS
+select IDb, L, count(IDa) as cou
+from (
+select IDa, IDb, distance, L, rank() over(partition by IDb order by distance) as rank
+from (
+select arc.ID AS IDa, rc.ID as IDb, (A-C)*(A-C) + (B-D)*(B-D) AS distance, L
+from arc, rc
+) as merge
+) as total
+where rank <= 5
+group by IDb, L
+[Success - View Created] knn(IDb: integer, L: string, cou: long)
+
+RamSQL Parse: 32 ms
+SELECT ID, L, M
+from rc,
+(
+select k.IDb, k.L
+from knn k
+where k.cou >= ( select max(n.cou) from knn n where k.IDb = n.IDb)
+) as final
+where final.IDb = rc.ID
+
+== Parsed Logical Plan ==
+'Project ['ID, 'L, 'M]
++- 'Filter ('final.IDb = 'rc.ID)
+   +- 'Join Inner
+      :- 'UnresolvedRelation `rc`
+      +- 'SubqueryAlias final
+         +- 'Project ['k.IDb, 'k.L]
+            +- 'Filter ('k.cou >= scalar-subquery#48 [])
+               :  +- 'SubqueryAlias scalar-subquery#48 []
+               :     +- 'Project [unresolvedalias('max('n.cou), None)]
+               :        +- 'Filter ('k.IDb = 'n.IDb)
+               :           +- 'UnresolvedRelation `knn`, n
+               +- 'UnresolvedRelation `knn`, k
+
+== Analyzed Logical Plan ==
+ID: int, L: string, M: string
+Project [ID#10, L#41, M#13]
++- Filter (IDb#40 = ID#10)
+   +- Join Inner
+      :- SubqueryAlias rc
+      :  +- LogicalRDD [ID#10, C#11, D#12, M#13]
+      +- SubqueryAlias final
+         +- Project [IDb#40, L#41]
+            +- Filter (cou#42L >= scalar-subquery#48 [(IDb#40 = IDb#40#51)])
+               :  +- SubqueryAlias scalar-subquery#48 [(IDb#40 = IDb#40#51)]
+               :     +- Project [_c0#50L, IDb#40 AS IDb#40#51]
+               :        +- Aggregate [IDb#40], [max(cou#42L) AS _c0#50L, IDb#40]
+               :           +- SubqueryAlias n
+               :              +- SubqueryAlias knn
+               :                 +- LogicalRDD [IDb#40, L#41, cou#42L]
+               +- SubqueryAlias k
+                  +- SubqueryAlias knn
+                     +- LogicalRDD [IDb#40, L#41, cou#42L]
+
+== Optimized Logical Plan ==
+Project [ID#10, L#41, M#13]
++- Join Inner, (IDb#40 = ID#10)
+   :- LogicalRDD [ID#10, C#11, D#12, M#13]
+   +- Project [IDb#40, L#41]
+      +- Join Inner, ((cou#42L >= _c0#50L) && (IDb#40 = IDb#40#51))
+         :- LogicalRDD [IDb#40, L#41, cou#42L]
+         +- Aggregate [IDb#40], [max(cou#42L) AS _c0#50L, IDb#40 AS IDb#40#51]
+            +- LogicalRDD [IDb#40, L#41, cou#42L]
+
+== Physical Plan ==
+*Project [ID#10, L#41, M#13]
++- ShuffledHashJoin [ID#10], [IDb#40], Inner, BuildRight
+   :- Exchange hashpartitioning(ID#10, 3)
+   :  +- Scan ExistingRDD[ID#10,C#11,D#12,M#13]
+   +- *Project [IDb#40, L#41]
+      +- ShuffledHashJoin [IDb#40], [IDb#40#51], Inner, BuildRight, (cou#42L >= _c0#50L)
+         :- Exchange hashpartitioning(IDb#40, 3)
+         :  +- Scan ExistingRDD[IDb#40,L#41,cou#42L]
+         +- Exchange hashpartitioning(IDb#40#51, 3)
+            +- *HashAggregate(keys=[IDb#40], functions=[max(cou#42L)], output=[_c0#50L, IDb#40#51])
+               +- Exchange hashpartitioning(IDb#40, 3)
+                  +- *HashAggregate(keys=[IDb#40], functions=[partial_max(cou#42L)], output=[IDb#40, max#53L])
+                     +- Scan ExistingRDD[IDb#40,L#41,cou#42L]
+
+[Success - Execution Finished]
+Compile RamSQL: 364 ms
+Execution (Collect): 5537 ms
+Total: 8514 ms
+Result Size: 608
+
+====== 12/12 23:36:57 tc_ll/arc=arc/rc=rc1/codegen=true/partitions=3/joinType=ShuffleHashJoin/fixpointTask=false/output=query/test_out/startvertex=1/log=error ======
+
+Load: 2673 ms
+
+RamSQL Parse: 176 ms
+CREATE VIEW knn(IDb, L, cou) AS
+select IDb, L, count(IDa) as cou
+from (
+select IDa, IDb, distance, L, rank() over(partition by IDb order by distance) as rank
+from (
+select arc.ID AS IDa, rc.ID as IDb, (A-C)*(A-C) + (B-D)*(B-D) AS distance, L
+from arc, rc
+) as merge
+) as total
+where rank <= 8
+group by IDb, L
+[Success - View Created] knn(IDb: integer, L: string, cou: long)
+
+RamSQL Parse: 33 ms
+SELECT ID, L, M
+from rc,
+(
+select k.IDb, k.L
+from knn k
+where k.cou >= ( select max(n.cou) from knn n where k.IDb = n.IDb)
+) as final
+where final.IDb = rc.ID
+
+== Parsed Logical Plan ==
+'Project ['ID, 'L, 'M]
++- 'Filter ('final.IDb = 'rc.ID)
+   +- 'Join Inner
+      :- 'UnresolvedRelation `rc`
+      +- 'SubqueryAlias final
+         +- 'Project ['k.IDb, 'k.L]
+            +- 'Filter ('k.cou >= scalar-subquery#48 [])
+               :  +- 'SubqueryAlias scalar-subquery#48 []
+               :     +- 'Project [unresolvedalias('max('n.cou), None)]
+               :        +- 'Filter ('k.IDb = 'n.IDb)
+               :           +- 'UnresolvedRelation `knn`, n
+               +- 'UnresolvedRelation `knn`, k
+
+== Analyzed Logical Plan ==
+ID: int, L: string, M: string
+Project [ID#10, L#41, M#13]
++- Filter (IDb#40 = ID#10)
+   +- Join Inner
+      :- SubqueryAlias rc
+      :  +- LogicalRDD [ID#10, C#11, D#12, M#13]
+      +- SubqueryAlias final
+         +- Project [IDb#40, L#41]
+            +- Filter (cou#42L >= scalar-subquery#48 [(IDb#40 = IDb#40#51)])
+               :  +- SubqueryAlias scalar-subquery#48 [(IDb#40 = IDb#40#51)]
+               :     +- Project [_c0#50L, IDb#40 AS IDb#40#51]
+               :        +- Aggregate [IDb#40], [max(cou#42L) AS _c0#50L, IDb#40]
+               :           +- SubqueryAlias n
+               :              +- SubqueryAlias knn
+               :                 +- LogicalRDD [IDb#40, L#41, cou#42L]
+               +- SubqueryAlias k
+                  +- SubqueryAlias knn
+                     +- LogicalRDD [IDb#40, L#41, cou#42L]
+
+== Optimized Logical Plan ==
+Project [ID#10, L#41, M#13]
++- Join Inner, (IDb#40 = ID#10)
+   :- LogicalRDD [ID#10, C#11, D#12, M#13]
+   +- Project [IDb#40, L#41]
+      +- Join Inner, ((cou#42L >= _c0#50L) && (IDb#40 = IDb#40#51))
+         :- LogicalRDD [IDb#40, L#41, cou#42L]
+         +- Aggregate [IDb#40], [max(cou#42L) AS _c0#50L, IDb#40 AS IDb#40#51]
+            +- LogicalRDD [IDb#40, L#41, cou#42L]
+
+== Physical Plan ==
+*Project [ID#10, L#41, M#13]
++- ShuffledHashJoin [ID#10], [IDb#40], Inner, BuildRight
+   :- Exchange hashpartitioning(ID#10, 3)
+   :  +- Scan ExistingRDD[ID#10,C#11,D#12,M#13]
+   +- *Project [IDb#40, L#41]
+      +- ShuffledHashJoin [IDb#40], [IDb#40#51], Inner, BuildRight, (cou#42L >= _c0#50L)
+         :- Exchange hashpartitioning(IDb#40, 3)
+         :  +- Scan ExistingRDD[IDb#40,L#41,cou#42L]
+         +- Exchange hashpartitioning(IDb#40#51, 3)
+            +- *HashAggregate(keys=[IDb#40], functions=[max(cou#42L)], output=[_c0#50L, IDb#40#51])
+               +- Exchange hashpartitioning(IDb#40, 3)
+                  +- *HashAggregate(keys=[IDb#40], functions=[partial_max(cou#42L)], output=[IDb#40, max#53L])
+                     +- Scan ExistingRDD[IDb#40,L#41,cou#42L]
+
+[Success - Execution Finished]
+Compile RamSQL: 344 ms
+Execution (Collect): 5970 ms
+Total: 9018 ms
+Result Size: 731
+
+====== 12/14 15:55:26 tc_ll/arc=arc/rc=rc1/codegen=true/partitions=3/joinType=ShuffleHashJoin/fixpointTask=false/output=query/test_out/startvertex=1/log=error ======
+
+Load: 8221 ms
+
+RamSQL Parse: 323 ms
+CREATE VIEW knn(IDb, L, cou) AS
+select IDb, L, count(IDa) as cou
+from (
+select IDa, IDb, distance, L, rank() over(partition by IDb order by distance) as rank
+from (
+select arc.ID AS IDa, rc.ID as IDb, (A-C)*(A-C) + (B-D)*(B-D) AS distance, L
+from arc, rc
+) as merge
+) as total
+where rank <= 8
+group by IDb, L
+[Success - View Created] knn(IDb: integer, L: string, cou: long)
+
+RamSQL Parse: 48 ms
+SELECT ID, L, M
+from rc,
+(
+select k.IDb, k.L
+from knn k
+where k.cou >= ( select max(n.cou) from knn n where k.IDb = n.IDb)
+) as final
+where final.IDb = rc.ID
+
+== Parsed Logical Plan ==
+'Project ['ID, 'L, 'M]
++- 'Filter ('final.IDb = 'rc.ID)
+   +- 'Join Inner
+      :- 'UnresolvedRelation `rc`
+      +- 'SubqueryAlias final
+         +- 'Project ['k.IDb, 'k.L]
+            +- 'Filter ('k.cou >= scalar-subquery#48 [])
+               :  +- 'SubqueryAlias scalar-subquery#48 []
+               :     +- 'Project [unresolvedalias('max('n.cou), None)]
+               :        +- 'Filter ('k.IDb = 'n.IDb)
+               :           +- 'UnresolvedRelation `knn`, n
+               +- 'UnresolvedRelation `knn`, k
+
+== Analyzed Logical Plan ==
+ID: int, L: string, M: string
+Project [ID#10, L#41, M#13]
++- Filter (IDb#40 = ID#10)
+   +- Join Inner
+      :- SubqueryAlias rc
+      :  +- LogicalRDD [ID#10, C#11, D#12, M#13]
+      +- SubqueryAlias final
+         +- Project [IDb#40, L#41]
+            +- Filter (cou#42L >= scalar-subquery#48 [(IDb#40 = IDb#40#51)])
+               :  +- SubqueryAlias scalar-subquery#48 [(IDb#40 = IDb#40#51)]
+               :     +- Project [_c0#50L, IDb#40 AS IDb#40#51]
+               :        +- Aggregate [IDb#40], [max(cou#42L) AS _c0#50L, IDb#40]
+               :           +- SubqueryAlias n
+               :              +- SubqueryAlias knn
+               :                 +- LogicalRDD [IDb#40, L#41, cou#42L]
+               +- SubqueryAlias k
+                  +- SubqueryAlias knn
+                     +- LogicalRDD [IDb#40, L#41, cou#42L]
+
+== Optimized Logical Plan ==
+Project [ID#10, L#41, M#13]
++- Join Inner, (IDb#40 = ID#10)
+   :- LogicalRDD [ID#10, C#11, D#12, M#13]
+   +- Project [IDb#40, L#41]
+      +- Join Inner, ((cou#42L >= _c0#50L) && (IDb#40 = IDb#40#51))
+         :- LogicalRDD [IDb#40, L#41, cou#42L]
+         +- Aggregate [IDb#40], [max(cou#42L) AS _c0#50L, IDb#40 AS IDb#40#51]
+            +- LogicalRDD [IDb#40, L#41, cou#42L]
+
+== Physical Plan ==
+*Project [ID#10, L#41, M#13]
++- ShuffledHashJoin [ID#10], [IDb#40], Inner, BuildRight
+   :- Exchange hashpartitioning(ID#10, 3)
+   :  +- Scan ExistingRDD[ID#10,C#11,D#12,M#13]
+   +- *Project [IDb#40, L#41]
+      +- ShuffledHashJoin [IDb#40], [IDb#40#51], Inner, BuildRight, (cou#42L >= _c0#50L)
+         :- Exchange hashpartitioning(IDb#40, 3)
+         :  +- Scan ExistingRDD[IDb#40,L#41,cou#42L]
+         +- Exchange hashpartitioning(IDb#40#51, 3)
+            +- *HashAggregate(keys=[IDb#40], functions=[max(cou#42L)], output=[_c0#50L, IDb#40#51])
+               +- Exchange hashpartitioning(IDb#40, 3)
+                  +- *HashAggregate(keys=[IDb#40], functions=[partial_max(cou#42L)], output=[IDb#40, max#53L])
+                     +- Scan ExistingRDD[IDb#40,L#41,cou#42L]
+
+[Success - Execution Finished]
+Compile RamSQL: 617 ms
+Execution (Collect): 8837 ms
+Total: 17735 ms
+Result Size: 731

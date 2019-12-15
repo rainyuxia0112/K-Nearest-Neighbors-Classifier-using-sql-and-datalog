@@ -1,0 +1,6 @@
+-partitions=3
+-codegen=true
+-fixpointTask=false
+-master=local[*]
+-log=error
+-output=query/test_out

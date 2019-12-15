@@ -1,0 +1,4 @@
+
+== rasql suite ==
+tc_ll: -rc=testdata/rc1.csv -startvertex=1 -arc=testdata/arc.csv 
+//tc_l: -rc=testdata/rc1.csv -startvertex=1 -arc=testdata/arc.csv 

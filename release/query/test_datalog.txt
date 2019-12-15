@@ -1,0 +1,4 @@
+
+== datalog suite ==
+tc_ll: -arc=testdata/arc.csv
+reach: -rc=testdata/rc1.csv -startvertex=1

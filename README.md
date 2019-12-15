@@ -24,7 +24,7 @@ cd release
 
 - KNN -  all recursive and non-recursive script we use, including **knn_nonrecusive.deal**, **knn_recusive.deal**, **recusive.sql**, **non_recusive.sql**, **the demo of the result**, **datapreprocessing script** and the  **test dataset**
 
-- NBC - includes all recursive script we use
+- Release - includes the sql environment 
 
 
 ### output
